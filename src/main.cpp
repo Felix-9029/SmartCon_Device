@@ -13,7 +13,7 @@ u32_t globalGreen = 0;
 u32_t globalBlue = 0;
 u32_t globalWhite = 0;
 
-int pin = 32;
+short pin = 32;
 int ledCount = 20;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(ledCount, pin, NEO_RGBW + NEO_KHZ800);
 
@@ -133,9 +133,9 @@ WebServer server(80);
 void connectToWifi() {
     Serial.printf("Connecting to %s\n", SSID);
 
-    WiFi.hostname(HOSTNAME);
+    WiFiClass::hostname(HOSTNAME);
     WiFi.begin(SSID, PWD);
-    while (WiFi.status() != WL_CONNECTED) {
+    while (WiFiClass::status() != WL_CONNECTED) {
         Serial.print(".");
         digitalWrite(LED, HIGH);
         delay(200);
@@ -145,14 +145,14 @@ void connectToWifi() {
 
     Serial.println("\nConnected.");
     Serial.printf("IP: %s\n", WiFi.localIP().toString().c_str());
-    Serial.printf("Hostname: %s\n", WiFi.getHostname());
+    Serial.printf("Hostname: %s\n", WiFiClass::getHostname());
     byte mac[6];
     WiFi.macAddress(mac);
     Serial.printf("MAC address: %x:%x:%x:%x:%x:%x\n", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
 }
 
 void handlePost() {
-    if (server.hasArg("plain") == false) {
+    if (!server.hasArg("plain")) {
         // TODO: error ausgeben, http code oder so
     }
     String body = server.arg("plain");
@@ -178,7 +178,7 @@ void handlePost() {
 
     strip.setPin(pin);
     strip.updateLength(ledCount);
-    colorSet(strip.Color(globalGreen, globalRed, globalBlue, globalWhite), 0);
+    colorSet(Adafruit_NeoPixel::Color(globalGreen, globalRed, globalBlue, globalWhite), 0);
     strip.show();
 
     server.send(200, "application/json", "{}");
@@ -261,7 +261,7 @@ void setup() {
 
 void loop() {
     server.handleClient();
-    if (WiFi.status() != WL_CONNECTED) {
+    if (WiFiClass::status() != WL_CONNECTED) {
         Serial.println("Connection lost.");
         connectToWifi();
         delay(1);
