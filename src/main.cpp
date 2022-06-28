@@ -14,24 +14,25 @@ using namespace std;
 // ------------------------------------- global variables -------------------------------------
 
 boolean colorMode = true;
+short pin = 13;
+int ledCount = 25;
+boolean stateOn = true;
 
+u32_t globalBrightness = 0;
 u32_t globalRed = 0;
 u32_t globalGreen = 0;
 u32_t globalBlue = 0;
 u32_t globalWhite = 0;
+string globalAnimation;
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(ledCount, pin, NEO_RGBW + NEO_KHZ800);
 
 TaskHandle_t AnimationTask;
-
-string animation;
-
-short pin = 13;
-int ledCount = 25;
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(ledCount, pin, NEO_RGBW + NEO_KHZ800);
 
 /* TODO
 typedef struct Data_t {
     Adafruit_NeoPixel strip;
-    string animation;
+    string globalAnimation;
 } CurrentData_t;
 */
 
@@ -201,37 +202,58 @@ void handleUpdate() {
 
 // ------------------------------------- strip set colors -------------------------------------
 
-void colorSet(uint32_t c, uint8_t wait) {
+void colorSet(uint32_t color) {
     for (uint16_t i = 0; i < strip.numPixels(); i++) {
-        strip.setPixelColor(i, c);
+        strip.setPixelColor(i, color);
     }
 }
 
 
-// ------------------------------------- strip set animation -------------------------------------
+// ------------------------------------- strip set globalAnimation -------------------------------------
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+    WheelPos = 255 - WheelPos;
+    if(WheelPos < 85) {
+        return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+    }
+    if(WheelPos < 170) {
+        WheelPos -= 85;
+        return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+    }
+    WheelPos -= 170;
+    return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+
 
 [[noreturn]] void animationSet(void *parameter) {
-    // TODO add animation with duration, (multiple) colors, length
+    // TODO add globalAnimation with duration, (multiple) colors, length
 
     /* TODO
     auto *data = (CurrentData_t *) parameter;
     */
     unsigned long previousMillis = 0;
-    int interval = 100;
+    int interval = 50;
 
-    // TODO delete me
-    int i = 0;
     unsigned long currentMillis;
+
+
+    uint16_t i, j;
+
     while(true) {
-        currentMillis = millis();
-        if (currentMillis - previousMillis > interval) {
-            // TODO delete me
-            Serial.println(i);
-            i++;
-            //-
-            strip.rainbow(10);
+        for (j = 0; j < 256; j++) {
+            for (i = 0; i < strip.numPixels(); i++) {
+                strip.setPixelColor(i, Wheel((i + j) & 255));
+            }
             strip.show();
-            previousMillis = currentMillis;
+            while (true) {
+                currentMillis = millis();
+                if (currentMillis - previousMillis > interval) {
+                    previousMillis = currentMillis;
+                    break;
+                }
+            }
         }
     }
 }
@@ -247,6 +269,10 @@ void getInfo() {
     // TODO: replace this global shit with a nice get function -> might be more complex due to more than one color per strip (animations / fade etc)
     JsonObject jsonObject = jsonDocument.createNestedObject();
     jsonObject["colorMode"] = colorMode;
+    jsonObject["pin"] = pin;
+    jsonObject["ledCount"] = ledCount;
+    jsonObject["stateOn"] = stateOn;
+    jsonObject["brightness"] = globalBrightness;
     if (colorMode) {
         jsonObject["red"] = globalRed;
         jsonObject["green"] = globalGreen;
@@ -254,7 +280,7 @@ void getInfo() {
         jsonObject["white"] = globalWhite;
     }
     else {
-        jsonObject["animation"] = animation;
+        jsonObject["globalAnimation"] = globalAnimation;
     }
     serializeJson(jsonDocument, buffer);
     server.send(200, "application/json", buffer);
@@ -262,6 +288,21 @@ void getInfo() {
 
 
 // ------------------------------------- handle values from app post -------------------------------------
+
+u32_t lightApplyBrightness(u32_t light) {
+    if (stateOn) {
+        u32_t value = (light / 255) * globalBrightness;
+        if (value > 255) {
+            return 255;
+        }
+        else {
+            return value;
+        }
+    }
+    else {
+        return 0;
+    }
+}
 
 void handlePost() {
     if (!server.hasArg("plain")) {
@@ -273,6 +314,8 @@ void handlePost() {
     colorMode = jsonDocument["colorMode"];
     pin = jsonDocument["pin"];
     ledCount = jsonDocument["ledCount"];
+    stateOn = jsonDocument["stateOn"];
+    globalBrightness = jsonDocument["brightness"];
     strip.setPin(pin);
     strip.updateLength(ledCount);
 
@@ -287,16 +330,16 @@ void handlePost() {
         }
 
         Serial.printf("R: %d G: %d B: %d W: %d\n", globalRed, globalGreen, globalBlue, globalWhite);
-        colorSet(Adafruit_NeoPixel::Color(globalGreen, globalRed, globalBlue, globalWhite), 0);
+        colorSet(Adafruit_NeoPixel::Color(lightApplyBrightness(globalGreen), lightApplyBrightness(globalRed), lightApplyBrightness(globalBlue), stateOn ? globalWhite : 0));
         strip.show();
     } else {
-        animation = jsonDocument["animation"].as<std::string>();
+        globalAnimation = jsonDocument["globalAnimation"].as<std::string>();
         if (AnimationTask != nullptr) {
             vTaskDelete(AnimationTask);
             AnimationTask = nullptr;
         }
         /* TODO
-        CurrentData_t currentData = {strip, animation};
+        CurrentData_t currentData = {strip, globalAnimation};
         */
         xTaskCreatePinnedToCore(
                 animationSet,             /* Task function. */
