@@ -10,8 +10,6 @@
 
 using namespace std;
 
-const char *HOSTNAME = "geile-Schnitte";
-
 
 // ------------------------------------- global variables -------------------------------------
 
@@ -30,6 +28,11 @@ short pin = 13;
 int ledCount = 25;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(ledCount, pin, NEO_RGBW + NEO_KHZ800);
 
+typedef struct Data_t {
+    string animation;
+    Adafruit_NeoPixel strip;
+} CurrentData_t;
+
 
 // ------------------------------------- Setup wifi -------------------------------------
 
@@ -38,7 +41,18 @@ WebServer server(80);
 void connectToWifi() {
     Serial.printf("Connecting to %s\n", SSID);
 
-    WiFiClass::hostname(HOSTNAME);
+    byte mac[6];
+    WiFi.macAddress(mac);
+    char macPart[6 + 1 ];
+    sprintf(macPart, "_%x%x%x", mac[2], mac[1], mac[0]);
+
+    string hostnameString = "EasyLED";
+    hostnameString.append(macPart);
+
+    char hostname[hostnameString.length() + 1];
+    strcpy(hostname, hostnameString.c_str());
+
+    WiFiClass::hostname(hostname);
     WiFi.begin(SSID, PWD);
     while (WiFiClass::status() != WL_CONNECTED) {
         Serial.print(".");
@@ -51,8 +65,6 @@ void connectToWifi() {
     Serial.println("\nConnected.");
     Serial.printf("IP: %s\n", WiFi.localIP().toString().c_str());
     Serial.printf("Hostname: %s\n", WiFiClass::getHostname());
-    byte mac[6];
-    WiFi.macAddress(mac);
     Serial.printf("MAC address: %x:%x:%x:%x:%x:%x\n", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
 }
 
@@ -185,39 +197,6 @@ void handleUpdate() {
 }
 
 
-// ------------------------------------- Host current values to update app instances -------------------------------------
-
-StaticJsonDocument<250> jsonDocument;
-char buffer[250];
-
-void create_json(char *tag, float value) {
-    jsonDocument.clear();
-    jsonDocument["type"] = tag;
-    jsonDocument["value"] = value;
-    serializeJson(jsonDocument, buffer);
-}
-
-void add_json_object(char *key, float value) {
-    JsonObject obj = jsonDocument.createNestedObject();
-    obj["type"] = key;
-    obj["value"] = value;
-}
-
-void getInfo() {
-    jsonDocument.clear();
-    // FIXME: change casting [-Write-strings] converting a string constant to 'char*' forbidden in C** ISO ## nils
-    // might be a security vuln or some other shit, works for now
-    // TODO: replace this global shit with a nice get function -> might be more complex due to more than one color per strip (animations / fade etc)
-    add_json_object("colorMode", colorMode);
-    add_json_object("red", globalRed);
-    add_json_object("green", globalGreen);
-    add_json_object("blue", globalBlue);
-    add_json_object("white", globalWhite);
-    serializeJson(jsonDocument, buffer);
-    server.send(200, "application/json", buffer);
-}
-
-
 // ------------------------------------- strip set colors -------------------------------------
 
 void colorSet(uint32_t c, uint8_t wait) {
@@ -232,12 +211,36 @@ void colorSet(uint32_t c, uint8_t wait) {
 void animationSet(void *parameter) {
     // TODO add animation with duration, (multiple) colors, length
 
-    string tmpAnimation = *((string *) parameter);
-
+    auto *data = (CurrentData_t *) parameter;
     for (int i = 0;; i++) {
-        Serial.println(i);
-        delay(1000);
+        data->strip.rainbow();
+        data->strip.show();
+        delay(100);
     }
+}
+
+
+// ------------------------------------- Host current values to update app instances -------------------------------------
+
+StaticJsonDocument<500> jsonDocument;
+char buffer[500];
+
+void getInfo() {
+    jsonDocument.clear();
+    // TODO: replace this global shit with a nice get function -> might be more complex due to more than one color per strip (animations / fade etc)
+    JsonObject jsonObject = jsonDocument.createNestedObject();
+    jsonObject["colorMode"] = colorMode;
+    if (colorMode) {
+        jsonObject["red"] = globalRed;
+        jsonObject["green"] = globalGreen;
+        jsonObject["blue"] = globalBlue;
+        jsonObject["white"] = globalWhite;
+    }
+    else {
+        jsonObject["animation"] = animation;
+    }
+    serializeJson(jsonDocument, buffer);
+    server.send(200, "application/json", buffer);
 }
 
 
@@ -264,7 +267,6 @@ void handlePost() {
             AnimationTask = NULL;
         }
 
-        Serial.printf("Pin: %d LED Count: %d\n", pin, ledCount);
         Serial.printf("R: %d G: %d B: %d W: %d\n", globalRed, globalGreen, globalBlue, globalWhite);
 
         strip.setPin(pin);
@@ -278,11 +280,12 @@ void handlePost() {
             vTaskDelete(AnimationTask);
             AnimationTask = NULL;
         }
+        CurrentData_t currentData = {animation, strip};
         xTaskCreatePinnedToCore(
                 animationSet, /* Task function. */
                 "AnimationTask",   /* name of task. */
                 10000,     /* Stack size of task */
-                (void *) &animation,      /* parameter of the task */
+                (void *) &currentData,      /* parameter of the task */
                 1,         /* priority of the task */
                 &AnimationTask,    /* Task handle to keep track of created task */
                 0);        /* pin task to core 0 */
@@ -297,7 +300,7 @@ void handlePost() {
 void setup_routing() {
     server.on("/led", HTTP_POST, handlePost);
     server.on("/info", getInfo);
-    // handleUpdate(); // FIXME: WHAT THE FUCK IS THIS DO NOT! ENABLE
+    handleUpdate(); // FIXME: WHAT THE FUCK IS THIS DO NOT! ENABLE
     server.begin();
 }
 
