@@ -43,8 +43,8 @@ void connectToWifi() {
 
     byte mac[6];
     WiFi.macAddress(mac);
-    char macPart[6 + 1 ];
-    sprintf(macPart, "_%x%x%x", mac[2], mac[1], mac[0]);
+    char macPart[7 + 1];
+    sprintf(macPart, "_%02x%02x%02x", mac[3], mac[4], mac[5]);
 
     string hostnameString = "EasyLED";
     hostnameString.append(macPart);
@@ -65,7 +65,7 @@ void connectToWifi() {
     Serial.println("\nConnected.");
     Serial.printf("IP: %s\n", WiFi.localIP().toString().c_str());
     Serial.printf("Hostname: %s\n", WiFiClass::getHostname());
-    Serial.printf("MAC address: %x:%x:%x:%x:%x:%x\n", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+    Serial.printf("MAC address: %02x:%02x:%02x:%02x:%02x:%02x\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
 
