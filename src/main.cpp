@@ -29,8 +29,8 @@ int ledCount = 25;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(ledCount, pin, NEO_RGBW + NEO_KHZ800);
 
 typedef struct Data_t {
-    string animation;
     Adafruit_NeoPixel strip;
+    string animation;
 } CurrentData_t;
 
 
@@ -210,12 +210,22 @@ void colorSet(uint32_t c, uint8_t wait) {
 
 void animationSet(void *parameter) {
     // TODO add animation with duration, (multiple) colors, length
-
+    Serial.println("TEST-----------------------------");
     auto *data = (CurrentData_t *) parameter;
-    for (int i = 0;; i++) {
-        data->strip.rainbow();
-        data->strip.show();
-        delay(100);
+    unsigned long previousMillis = 0;
+    int interval = 1000;
+    int i = 0;
+    unsigned long currentMillis;
+    while(true) {
+        currentMillis = millis();
+        if (currentMillis - previousMillis > interval) {
+            Serial.print("----------------------------- ");
+            Serial.println(i);
+            i++;
+            data->strip.rainbow(10);
+            data->strip.show();
+            previousMillis = currentMillis;
+        }
     }
 }
 
@@ -253,11 +263,13 @@ void handlePost() {
     String body = server.arg("plain");
     deserializeJson(jsonDocument, body);
 
+    colorMode = jsonDocument["colorMode"];
     pin = jsonDocument["pin"];
     ledCount = jsonDocument["ledCount"];
+    strip.setPin(pin);
+    strip.updateLength(ledCount);
 
-    if (jsonDocument["colorMode"] == true) {
-        colorMode = jsonDocument["colorMode"];
+    if (colorMode) {
         globalRed = jsonDocument["red"];
         globalGreen = jsonDocument["green"];
         globalBlue = jsonDocument["blue"];
@@ -268,27 +280,24 @@ void handlePost() {
         }
 
         Serial.printf("R: %d G: %d B: %d W: %d\n", globalRed, globalGreen, globalBlue, globalWhite);
-
-        strip.setPin(pin);
-        strip.updateLength(ledCount);
         colorSet(Adafruit_NeoPixel::Color(globalGreen, globalRed, globalBlue, globalWhite), 0);
         strip.show();
     } else {
-        colorMode = jsonDocument["colorMode"];
         animation = jsonDocument["animation"].as<std::string>();
         if (AnimationTask != NULL) {
             vTaskDelete(AnimationTask);
             AnimationTask = NULL;
         }
-        CurrentData_t currentData = {animation, strip};
+        CurrentData_t currentData = {strip, animation};
         xTaskCreatePinnedToCore(
-                animationSet, /* Task function. */
-                "AnimationTask",   /* name of task. */
-                10000,     /* Stack size of task */
-                (void *) &currentData,      /* parameter of the task */
-                1,         /* priority of the task */
-                &AnimationTask,    /* Task handle to keep track of created task */
-                0);        /* pin task to core 0 */
+                animationSet,             /* Task function. */
+                "AnimationTask",             /* name of task. */
+                10000,                   /* Stack size of task */
+                (void *) &currentData,   /* parameter of the task */
+                1,                          /* priority of the task */
+                &AnimationTask,          /* Task handle to keep track of created task */
+                1                             /* pin task to core 0 */
+        );
     }
 
     server.send(200, "application/json", "{}");
