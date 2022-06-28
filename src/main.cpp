@@ -28,10 +28,12 @@ short pin = 13;
 int ledCount = 25;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(ledCount, pin, NEO_RGBW + NEO_KHZ800);
 
+/* TODO
 typedef struct Data_t {
     Adafruit_NeoPixel strip;
     string animation;
 } CurrentData_t;
+*/
 
 
 // ------------------------------------- Setup wifi -------------------------------------
@@ -208,22 +210,27 @@ void colorSet(uint32_t c, uint8_t wait) {
 
 // ------------------------------------- strip set animation -------------------------------------
 
-void animationSet(void *parameter) {
+[[noreturn]] void animationSet(void *parameter) {
     // TODO add animation with duration, (multiple) colors, length
-    Serial.println("TEST-----------------------------");
+
+    /* TODO
     auto *data = (CurrentData_t *) parameter;
+    */
     unsigned long previousMillis = 0;
-    int interval = 1000;
+    int interval = 100;
+
+    // TODO delete me
     int i = 0;
     unsigned long currentMillis;
     while(true) {
         currentMillis = millis();
         if (currentMillis - previousMillis > interval) {
-            Serial.print("----------------------------- ");
+            // TODO delete me
             Serial.println(i);
             i++;
-            data->strip.rainbow(10);
-            data->strip.show();
+            //-
+            strip.rainbow(10);
+            strip.show();
             previousMillis = currentMillis;
         }
     }
@@ -274,9 +281,9 @@ void handlePost() {
         globalGreen = jsonDocument["green"];
         globalBlue = jsonDocument["blue"];
         globalWhite = jsonDocument["white"];
-        if (AnimationTask != NULL) {
+        if (AnimationTask != nullptr) {
             vTaskDelete(AnimationTask);
-            AnimationTask = NULL;
+            AnimationTask = nullptr;
         }
 
         Serial.printf("R: %d G: %d B: %d W: %d\n", globalRed, globalGreen, globalBlue, globalWhite);
@@ -284,16 +291,20 @@ void handlePost() {
         strip.show();
     } else {
         animation = jsonDocument["animation"].as<std::string>();
-        if (AnimationTask != NULL) {
+        if (AnimationTask != nullptr) {
             vTaskDelete(AnimationTask);
-            AnimationTask = NULL;
+            AnimationTask = nullptr;
         }
+        /* TODO
         CurrentData_t currentData = {strip, animation};
+        */
         xTaskCreatePinnedToCore(
                 animationSet,             /* Task function. */
                 "AnimationTask",             /* name of task. */
                 10000,                   /* Stack size of task */
+                /* TODO
                 (void *) &currentData,   /* parameter of the task */
+                nullptr,
                 1,                          /* priority of the task */
                 &AnimationTask,          /* Task handle to keep track of created task */
                 1                             /* pin task to core 0 */
