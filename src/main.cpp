@@ -291,7 +291,8 @@ void getInfo() {
 
 u32_t lightApplyBrightness(u32_t light) {
     if (stateOn) {
-        u32_t value = (light / 255) * globalBrightness;
+        // FIXME fix these nearly illegal casts
+        auto value = static_cast<u32_t>((static_cast<double>(light) / 255) * globalBrightness);
         if (value > 255) {
             return 255;
         }
