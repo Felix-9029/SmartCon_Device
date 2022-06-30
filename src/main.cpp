@@ -38,14 +38,6 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(ledCount, pin, NEO_RGBW + NEO_KHZ800
 
 TaskHandle_t AnimationTask;
 
-/* TODO
-typedef struct Data_t {
-    Adafruit_NeoPixel strip;
-    string globalAnimation;
-} CurrentData_t;
-*/
-
-
 // delay replacement
 void wait(int interval) {
     unsigned long endMillis = millis() + interval;
@@ -96,7 +88,7 @@ void connectToWifi() {
 
 void handleUpdate() {
 
-    // TODO handling uploading firmware file
+    // TODO handle uploading firmware file
     server.on(
             "/update", HTTP_POST, []() {
                 server.sendHeader("Connection", "close");
@@ -159,11 +151,6 @@ uint32_t Wheel(byte WheelPos) {
 
 [[noreturn]] void animationSet(void *parameter) {
     // TODO add globalAnimation with duration, (multiple) colors, length
-
-    /* TODO
-    auto *data = (CurrentData_t *) parameter;
-    */
-
     uint16_t i, j;
 
     while (true) {
@@ -226,7 +213,7 @@ u32_t lightApplyBrightness(u32_t light) {
 
 void handlePost() {
     if (!server.hasArg("plain")) {
-        // TODO: error ausgeben, http code oder so
+        // TODO: return error
     }
     String body = server.arg("plain");
     deserializeJson(jsonDocument, body);
@@ -259,16 +246,11 @@ void handlePost() {
             vTaskDelete(AnimationTask);
             AnimationTask = nullptr;
         }
-        /* TODO
-        CurrentData_t currentData = {strip, globalAnimation};
-        */
         xTaskCreatePinnedToCore(
                 animationSet,             /* Task function. */
                 "AnimationTask",             /* name of task. */
                 10000,                   /* Stack size of task */
-                /* TODO
-                (void *) &currentData,   /* parameter of the task */
-                nullptr,
+                nullptr,                /* parameter of the task */
                 1,                          /* priority of the task */
                 &AnimationTask,          /* Task handle to keep track of created task */
                 1                             /* pin task to core 0 */
@@ -284,7 +266,7 @@ void handlePost() {
 void setup_routing() {
     server.on("/led", HTTP_POST, handlePost);
     server.on("/info", getInfo);
-    handleUpdate(); // FIXME: WHAT THE FUCK IS THIS DO NOT! ENABLE
+    // handleUpdate();
     server.begin();
 }
 
