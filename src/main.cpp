@@ -46,6 +46,16 @@ typedef struct Data_t {
 */
 
 
+// delay replacement
+void wait(int interval) {
+    unsigned long endMillis = millis() + interval;
+    while (true) {
+        if (endMillis <= millis()) {
+            break;
+        }
+    }
+}
+
 // ------------------------------------- Setup wifi -------------------------------------
 
 WebServer server(80);
@@ -69,9 +79,9 @@ void connectToWifi() {
     while (WiFiClass::status() != WL_CONNECTED) {
         Serial.print(".");
         digitalWrite(LED, HIGH);
-        delay(200);
+        wait(200);
         digitalWrite(LED, LOW);
-        delay(200);
+        wait(200);
     }
 
     Serial.println("\nConnected.");
@@ -153,11 +163,6 @@ uint32_t Wheel(byte WheelPos) {
     /* TODO
     auto *data = (CurrentData_t *) parameter;
     */
-    unsigned long previousMillis = 0;
-    int interval = 50;
-
-    unsigned long currentMillis;
-
 
     uint16_t i, j;
 
@@ -167,14 +172,7 @@ uint32_t Wheel(byte WheelPos) {
                 strip.setPixelColor(i, Wheel((i + j) & 255));
             }
             strip.show();
-            // delay replacement
-            while (true) {
-                currentMillis = millis();
-                if (currentMillis - previousMillis > interval) {
-                    previousMillis = currentMillis;
-                    break;
-                }
-            }
+            wait(100);
         }
     }
 }
@@ -303,6 +301,6 @@ void loop() {
     if (WiFiClass::status() != WL_CONNECTED) {
         Serial.println("Connection lost.");
         connectToWifi();
-        delay(1);
+        wait(10);
     }
 }
