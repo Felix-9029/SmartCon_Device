@@ -23,7 +23,7 @@ using namespace std;
 // ------------------------------------- global variables and classes -------------------------------------
 
 WebServer server(80);
-vector<LedStripeOnPin> ledStripeOnPinList;
+vector<LedStripeOnPin*> ledStripeOnPinList;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(0, 0, NEO_RGBW + NEO_KHZ800);
 
@@ -174,10 +174,10 @@ void handlePost() {
     }
 
     boolean containsPin = false;
-    LedStripeOnPin ledStripeOnPin;
-    LedStripeOnPin ledStripeOnPinOld;
-    for (const LedStripeOnPin& ledStripeOnPinTmp : ledStripeOnPinList) {
-        if (ledStripeOnPinTmp.getPin() == pin) {
+    LedStripeOnPin* ledStripeOnPin;
+    LedStripeOnPin* ledStripeOnPinOld;
+    for (const LedStripeOnPin* ledStripeOnPinTmp : ledStripeOnPinList) {
+        if (ledStripeOnPinTmp->getPin() == pin) {
             ledStripeOnPinOld = ledStripeOnPinTmp;
             ledStripeOnPin = ledStripeOnPinTmp;
             containsPin = true;
@@ -186,55 +186,55 @@ void handlePost() {
     }
 
     if (!containsPin) {
-        ledStripeOnPin = LedStripeOnPin();
+        ledStripeOnPin = new LedStripeOnPin();
     }
 
     if (jsonDocument.containsKey("colorMode")) {
-        ledStripeOnPin.setColorMode(jsonDocument["colorMode"]);
+        ledStripeOnPin->setColorMode(jsonDocument["colorMode"]);
     }
     if (jsonDocument.containsKey("pin")) {
-        ledStripeOnPin.setPin(jsonDocument["pin"]);
+        ledStripeOnPin->setPin(jsonDocument["pin"]);
     }
     if (jsonDocument.containsKey("ledCount")) {
-        ledStripeOnPin.setLedCount(jsonDocument["ledCount"]);
+        ledStripeOnPin->setLedCount(jsonDocument["ledCount"]);
     }
     if (jsonDocument.containsKey("stateOn")) {
-        ledStripeOnPin.setStateOn(jsonDocument["stateOn"]);
+        ledStripeOnPin->setStateOn(jsonDocument["stateOn"]);
     }
     if (jsonDocument.containsKey("brightness")) {
-        ledStripeOnPin.setBrightness(jsonDocument["brightness"]);
+        ledStripeOnPin->setBrightness(jsonDocument["brightness"]);
     }
 
-    strip.setPin(ledStripeOnPin.getPin());
-    strip.updateLength(ledStripeOnPin.getLedCount());
+    strip.setPin(ledStripeOnPin->getPin());
+    strip.updateLength(ledStripeOnPin->getLedCount());
 
-    if (ledStripeOnPin.getColorMode()) {
+    if (ledStripeOnPin->getColorMode()) {
         if (jsonDocument.containsKey("red")) {
-            ledStripeOnPin.setRed(jsonDocument["red"]);
+            ledStripeOnPin->setRed(jsonDocument["red"]);
         }
         if (jsonDocument.containsKey("green")) {
-            ledStripeOnPin.setGreen(jsonDocument["green"]);
+            ledStripeOnPin->setGreen(jsonDocument["green"]);
         }
         if (jsonDocument.containsKey("blue")) {
-            ledStripeOnPin.setBlue(jsonDocument["blue"]);
+            ledStripeOnPin->setBlue(jsonDocument["blue"]);
         }
         if (jsonDocument.containsKey("white")) {
-            ledStripeOnPin.setWhite(jsonDocument["white"]);
+            ledStripeOnPin->setWhite(jsonDocument["white"]);
         }
         if (AnimationTask != nullptr) {
             vTaskDelete(AnimationTask);
             AnimationTask = nullptr;
         }
 
-        Serial.printf("R: %d G: %d B: %d W: %d\n", ledStripeOnPin.getRed(), ledStripeOnPin.getGreen(), ledStripeOnPin.getBlue(), ledStripeOnPin.getWhite());
-        setColor(Adafruit_NeoPixel::Color(ledStripeOnPin.applyBrightnessToLight(0),
-                                          ledStripeOnPin.applyBrightnessToLight(1),
-                                          ledStripeOnPin.applyBrightnessToLight(2),
-                                          ledStripeOnPin.getStateOn() ? ledStripeOnPin.getWhite() : 0));
+        Serial.printf("R: %d G: %d B: %d W: %d\n", ledStripeOnPin->getRed(), ledStripeOnPin->getGreen(), ledStripeOnPin->getBlue(), ledStripeOnPin->getWhite());
+        setColor(Adafruit_NeoPixel::Color(ledStripeOnPin->applyBrightnessToLight(0),
+                                          ledStripeOnPin->applyBrightnessToLight(1),
+                                          ledStripeOnPin->applyBrightnessToLight(2),
+                                          ledStripeOnPin->getStateOn() ? ledStripeOnPin->getWhite() : 0));
         strip.show();
     }
     else {
-        ledStripeOnPin.setAnimation(jsonDocument["globalAnimation"].as<String>());
+        ledStripeOnPin->setAnimation(jsonDocument["globalAnimation"].as<String>());
         if (AnimationTask != nullptr) {
             vTaskDelete(AnimationTask);
             AnimationTask = nullptr;
@@ -251,8 +251,8 @@ void handlePost() {
     }
 
     char buffer[512];
-    serializeJson(ledStripeOnPin.getInfo(), buffer);
-    ledStripeOnPin.setBuffer(buffer);
+    serializeJson(ledStripeOnPin->getInfo(), buffer);
+    ledStripeOnPin->setBuffer(buffer);
 
     if (containsPin) {
         replace(ledStripeOnPinList.begin(), ledStripeOnPinList.end(), ledStripeOnPinOld, ledStripeOnPin);
@@ -271,11 +271,11 @@ u32_t currentListSize = 0;
 void setup_routing() {
     server.on("/led", HTTP_POST, handlePost);
     // TODO one page per PIN
-    for (const LedStripeOnPin &ledStripeOnPinTmp : ledStripeOnPinList) {
+    for (const LedStripeOnPin* ledStripeOnPinTmp : ledStripeOnPinList) {
         String path = "/pin/";
-        path.concat(ledStripeOnPinTmp.getPin());
-        server.on(path, [&ledStripeOnPinTmp]() {
-            server.send(200, "application/json", ledStripeOnPinTmp.getBuffer());
+        path.concat(ledStripeOnPinTmp->getPin());
+        server.on(path, [ledStripeOnPinTmp]() {
+            server.send(200, "application/json", ledStripeOnPinTmp->getBuffer());
         });
     }
     // handleUpdate();
