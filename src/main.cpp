@@ -1,18 +1,18 @@
 /**
- * @author <p>Nils Herzig, Felix Reichert</p>
- * <p>Package: de.fr_nh_hl.easyled.ui</p>
- * <p>File: MainActivity.kt</p>
+ * @author <p>Felix Reichert</p>
+ * <p>File: main.cpp</p>
  * <p>Creation date: 01.06.2022</p>
- * <p>Last update: 30.06.2022</p>
- * <p>Version: 1</p>
+ * <p>Last update: 12.11.2022</p>
+ * <p>Version: 2</p>
  */
 
+#include <Preferences.h>
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
-#include <string>
 #include <Update.h>
 #include <WebServer.h>
 #include <WiFi.h>
+#include "LedStripeOnPin.h"
 #include "credentials.h"
 
 #define LED 2
@@ -20,21 +20,12 @@
 using namespace std;
 
 
-// ------------------------------------- global variables -------------------------------------
+// ------------------------------------- global variables and classes -------------------------------------
 
-boolean colorMode = true;
-short pin = 13;
-int ledCount = 25;
-boolean stateOn = true;
+WebServer server(80);
+vector<LedStripeOnPin*> ledStripeOnPinList;
 
-u32_t globalBrightness = 0;
-u32_t globalRed = 0;
-u32_t globalGreen = 0;
-u32_t globalBlue = 0;
-u32_t globalWhite = 0;
-string globalAnimation;
-
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(ledCount, pin, NEO_RGBW + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(0, 0, NEO_RGBW + NEO_KHZ800);
 
 TaskHandle_t AnimationTask;
 
@@ -49,8 +40,6 @@ void wait(int interval) {
 }
 
 // ------------------------------------- Setup wifi -------------------------------------
-
-WebServer server(80);
 
 void connectToWifi() {
     Serial.printf("Connecting to %s\n", SSID);
@@ -85,7 +74,6 @@ void connectToWifi() {
 
 // ------------------------------------- OTA - INSECURE -------------------------------------
 
-
 void handleUpdate() {
 
     // TODO handle uploading firmware file
@@ -99,8 +87,7 @@ void handleUpdate() {
                 HTTPUpload &upload = server.upload();
                 if (upload.status == UPLOAD_FILE_START) {
                     Serial.printf("Update: %s\n", upload.filename.c_str());
-                    if (!Update.begin(
-                            UPDATE_SIZE_UNKNOWN)) {  // start with max available size
+                    if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {  // start with max available size
                         Update.printError(Serial);
                     }
                 }
@@ -122,15 +109,14 @@ void handleUpdate() {
             });
 }
 
-
 // ------------------------------------- strip set colors -------------------------------------
 
-void colorSet(uint32_t color) {
-    for (uint16_t i = 0; i < strip.numPixels(); i++) {
-        strip.setPixelColor(i, color);
+void setColor(uint32_t color) {
+    int numPixels = strip.numPixels();
+    for (uint16_t pixel = 0; pixel < numPixels; pixel++) {
+        strip.setPixelColor(pixel, Adafruit_NeoPixel::gamma32(color));
     }
 }
-
 
 // ------------------------------------- strip set globalAnimation -------------------------------------
 
@@ -165,83 +151,90 @@ uint32_t Wheel(byte WheelPos) {
 }
 
 
-// ------------------------------------- Host current values to update app instances -------------------------------------
-
-StaticJsonDocument<500> jsonDocument;
-char buffer[500];
-
-void getInfo() {
-    jsonDocument.clear();
-    // TODO: replace this global shit with a nice get function -> might be more complex due to more than one color per strip (animations / fade etc)
-    JsonObject jsonObject = jsonDocument.createNestedObject();
-    jsonObject["colorMode"] = colorMode;
-    jsonObject["pin"] = pin;
-    jsonObject["ledCount"] = ledCount;
-    jsonObject["stateOn"] = stateOn;
-    jsonObject["brightness"] = globalBrightness;
-    if (colorMode) {
-        jsonObject["red"] = globalRed;
-        jsonObject["green"] = globalGreen;
-        jsonObject["blue"] = globalBlue;
-        jsonObject["white"] = globalWhite;
-    }
-    else {
-        jsonObject["globalAnimation"] = globalAnimation;
-    }
-    serializeJson(jsonDocument, buffer);
-    server.send(200, "application/json", buffer);
-}
-
-
 // ------------------------------------- handle values from app post -------------------------------------
 
-u32_t lightApplyBrightness(u32_t light) {
-    if (stateOn) {
-        // FIXME fix these nearly illegal casts
-        auto value = static_cast<u32_t>((static_cast<double>(light) / 255) * globalBrightness);
-        if (value > 255) {
-            return 255;
-        }
-        else {
-            return value;
-        }
-    }
-    else {
-        return 0;
-    }
-}
+StaticJsonDocument<512> jsonDocument;
 
 void handlePost() {
     if (!server.hasArg("plain")) {
-        // TODO: return error
+        server.send(404, "application/json", "{}");
+        return;
     }
+
     String body = server.arg("plain");
     deserializeJson(jsonDocument, body);
 
-    colorMode = jsonDocument["colorMode"];
-    pin = jsonDocument["pin"];
-    ledCount = jsonDocument["ledCount"];
-    stateOn = jsonDocument["stateOn"];
-    globalBrightness = jsonDocument["brightness"];
-    strip.setPin(pin);
-    strip.updateLength(ledCount);
+    short pin;
+    if (jsonDocument.containsKey("pin")) {
+        pin = jsonDocument["pin"];
+    }
+    else {
+        server.send(404, "application/json", "{}");
+        return;
+    }
 
-    if (colorMode) {
-        globalRed = jsonDocument["red"];
-        globalGreen = jsonDocument["green"];
-        globalBlue = jsonDocument["blue"];
-        globalWhite = jsonDocument["white"];
+    boolean containsPin = false;
+    LedStripeOnPin* ledStripeOnPin;
+    LedStripeOnPin* ledStripeOnPinOld;
+    for (LedStripeOnPin* ledStripeOnPinTmp : ledStripeOnPinList) {
+        if (ledStripeOnPinTmp->getPin() == pin) {
+            ledStripeOnPinOld = ledStripeOnPinTmp;
+            ledStripeOnPin = ledStripeOnPinTmp;
+            containsPin = true;
+            break;
+        }
+    }
+
+    if (!containsPin) {
+        ledStripeOnPin = new LedStripeOnPin();
+    }
+
+    if (jsonDocument.containsKey("colorMode")) {
+        ledStripeOnPin->setColorMode(jsonDocument["colorMode"]);
+    }
+    if (jsonDocument.containsKey("pin")) {
+        ledStripeOnPin->setPin(jsonDocument["pin"]);
+    }
+    if (jsonDocument.containsKey("ledCount")) {
+        ledStripeOnPin->setLedCount(jsonDocument["ledCount"]);
+    }
+    if (jsonDocument.containsKey("stateOn")) {
+        ledStripeOnPin->setStateOn(jsonDocument["stateOn"]);
+    }
+    if (jsonDocument.containsKey("brightness")) {
+        ledStripeOnPin->setBrightness(jsonDocument["brightness"]);
+    }
+
+    strip.setPin(ledStripeOnPin->getPin());
+    strip.updateLength(ledStripeOnPin->getLedCount());
+
+    if (ledStripeOnPin->getColorMode()) {
+        if (jsonDocument.containsKey("red")) {
+            ledStripeOnPin->setRed(jsonDocument["red"]);
+        }
+        if (jsonDocument.containsKey("green")) {
+            ledStripeOnPin->setGreen(jsonDocument["green"]);
+        }
+        if (jsonDocument.containsKey("blue")) {
+            ledStripeOnPin->setBlue(jsonDocument["blue"]);
+        }
+        if (jsonDocument.containsKey("white")) {
+            ledStripeOnPin->setWhite(jsonDocument["white"]);
+        }
         if (AnimationTask != nullptr) {
             vTaskDelete(AnimationTask);
             AnimationTask = nullptr;
         }
 
-        Serial.printf("R: %d G: %d B: %d W: %d\n", globalRed, globalGreen, globalBlue, globalWhite);
-        colorSet(Adafruit_NeoPixel::Color(lightApplyBrightness(globalGreen), lightApplyBrightness(globalRed), lightApplyBrightness(globalBlue), stateOn ? globalWhite : 0));
+        Serial.printf("R: %d G: %d B: %d W: %d\n", ledStripeOnPin->getRed(), ledStripeOnPin->getGreen(), ledStripeOnPin->getBlue(), ledStripeOnPin->getWhite());
+        setColor(Adafruit_NeoPixel::Color(ledStripeOnPin->applyBrightnessToLight(0),
+                                          ledStripeOnPin->applyBrightnessToLight(1),
+                                          ledStripeOnPin->applyBrightnessToLight(2),
+                                          ledStripeOnPin->getStateOn() ? ledStripeOnPin->getWhite() : 0));
         strip.show();
     }
     else {
-        globalAnimation = jsonDocument["globalAnimation"].as<std::string>();
+        ledStripeOnPin->setAnimation(jsonDocument["globalAnimation"].as<String>());
         if (AnimationTask != nullptr) {
             vTaskDelete(AnimationTask);
             AnimationTask = nullptr;
@@ -257,15 +250,33 @@ void handlePost() {
         );
     }
 
+    char buffer[512];
+    serializeJson(ledStripeOnPin->getInfo(), buffer);
+    ledStripeOnPin->setBuffer(buffer);
+
+    if (containsPin) {
+        replace(ledStripeOnPinList.begin(), ledStripeOnPinList.end(), ledStripeOnPinOld, ledStripeOnPin);
+    }
+    else {
+        ledStripeOnPinList.push_back(ledStripeOnPin);
+    }
+
     server.send(200, "application/json", "{}");
 }
 
 
 // ------------------------------------- setup -------------------------------------
 
+u32_t currentListSize = 0;
 void setup_routing() {
-    server.on("/led", HTTP_POST, handlePost);
-    server.on("/info", getInfo);
+    server.on("/api/led", HTTP_POST, handlePost);
+    for (const LedStripeOnPin* ledStripeOnPinTmp : ledStripeOnPinList) {
+        String path = "/api/pin/";
+        path.concat(ledStripeOnPinTmp->getPin());
+        server.on(path, [ledStripeOnPinTmp]() {
+            server.send(200, "application/json", ledStripeOnPinTmp->getBuffer());
+        });
+    }
     // handleUpdate();
     server.begin();
 }
@@ -284,5 +295,10 @@ void loop() {
         Serial.println("Connection lost.");
         connectToWifi();
         wait(10);
+    }
+    if (ledStripeOnPinList.size() != currentListSize) {
+        server.close();
+        setup_routing();
+        currentListSize = ledStripeOnPinList.size();
     }
 }
