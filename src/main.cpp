@@ -176,7 +176,7 @@ void handlePost() {
     boolean containsPin = false;
     LedStripeOnPin* ledStripeOnPin;
     LedStripeOnPin* ledStripeOnPinOld;
-    for (const LedStripeOnPin* ledStripeOnPinTmp : ledStripeOnPinList) {
+    for (LedStripeOnPin* ledStripeOnPinTmp : ledStripeOnPinList) {
         if (ledStripeOnPinTmp->getPin() == pin) {
             ledStripeOnPinOld = ledStripeOnPinTmp;
             ledStripeOnPin = ledStripeOnPinTmp;
@@ -269,10 +269,9 @@ void handlePost() {
 
 u32_t currentListSize = 0;
 void setup_routing() {
-    server.on("/led", HTTP_POST, handlePost);
-    // TODO one page per PIN
+    server.on("/api/led", HTTP_POST, handlePost);
     for (const LedStripeOnPin* ledStripeOnPinTmp : ledStripeOnPinList) {
-        String path = "/pin/";
+        String path = "/api/pin/";
         path.concat(ledStripeOnPinTmp->getPin());
         server.on(path, [ledStripeOnPinTmp]() {
             server.send(200, "application/json", ledStripeOnPinTmp->getBuffer());
