@@ -289,6 +289,34 @@ void handlePost() {
     server.send(200, "application/json", "{}");
 }
 
+void handleDelete() {
+    if (!server.hasArg("plain")) {
+        server.send(404, "application/json", "{}");
+        return;
+    }
+
+    String body = server.arg("plain");
+    deserializeJson(jsonDocument, body);
+
+    short pin;
+    if (jsonDocument.containsKey("pin")) {
+        pin = jsonDocument["pin"];
+    }
+    else {
+        server.send(404, "application/json", "{}");
+        return;
+    }
+
+    for (LedStripeOnPin* ledStripeOnPinTmp : ledStripeOnPinList) {
+        if (ledStripeOnPinTmp->getPin() == pin) {
+            ledStripeOnPinList.erase(std::remove(ledStripeOnPinList.begin(), ledStripeOnPinList.end(), ledStripeOnPinTmp), ledStripeOnPinList.end());
+            break;
+        }
+    }
+
+    server.send(200, "application/json", "{}");
+}
+
 
 // ------------------------------------- setup -------------------------------------
 
@@ -302,6 +330,7 @@ void setup_routing() {
             server.send(200, "application/json", ledStripeOnPinTmp->getBuffer());
         });
     }
+    server.on("/api/delete", HTTP_DELETE, handleDelete);
     // handleUpdate();
     server.begin();
 }
