@@ -57,12 +57,15 @@ void connectToWifi() {
 
     WiFiClass::hostname(hostname);
     WiFi.begin(SSID, PWD);
+    int resetCounter = 0;
     while (WiFiClass::status() != WL_CONNECTED) {
+        resetCounter++;
+        if (resetCounter >= 100) {
+            ESP.restart();
+        }
         Serial.print(".");
-        digitalWrite(LED, HIGH);
-        wait(200);
-        digitalWrite(LED, LOW);
-        wait(200);
+        digitalWrite(LED, !digitalRead(LED));
+        wait(800);
     }
 
     Serial.println("\nConnected.");
