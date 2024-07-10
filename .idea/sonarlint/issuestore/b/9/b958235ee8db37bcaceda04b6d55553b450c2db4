@@ -1,0 +1,30 @@
+
+Y	cpp:S5028"8Replace this macro by "const", "constexpr" or an "enum".(ª–•çıÿÿÿÿ8²»¿¾‰2
+|	cpp:S1135é"4Complete the task associated to this "TODO" comment.(ÊÆ ’ûÿÿÿÿ8ÆŒ¾Ã€2J$b7a7243e-e15e-453d-a86b-b6ca345b1f3a
+Ÿ	cpp:S5276ş"Wimplicit conversion loses integer precision: 'int' to 'uint16_t' (aka 'unsigned short')(õõÏ£şÿÿÿÿ8’ŒÔÃ€2J$24ce196d-18ea-455a-987d-451db0a5db3b
+·	cpp:S5276•"oimplicit conversion loses integer precision: 'uint32_t' (aka 'unsigned int') to 'uint8_t' (aka 'unsigned char')(üËÚ´øÿÿÿÿ8’ŒÔÃ€2J$f0cc3c86-2600-4b2b-a7de-6af17c8a0ffb
+²	cpp:S5276”"oimplicit conversion loses integer precision: 'uint32_t' (aka 'unsigned int') to 'uint8_t' (aka 'unsigned char')(àÚğí8’ŒÔÃ€2J$d010877e-1252-4ab1-b3ab-5cf3f15eecda
+²	cpp:S5276“"oimplicit conversion loses integer precision: 'uint32_t' (aka 'unsigned int') to 'uint8_t' (aka 'unsigned char')(«ú¡®8’ŒÔÃ€2J$65c3f8d0-a733-4561-b1e9-b6fa20ee7981
+²	cpp:S5276’"oimplicit conversion loses integer precision: 'uint32_t' (aka 'unsigned int') to 'uint8_t' (aka 'unsigned char')(ğòÌØ8’ŒÔÃ€2J$8b05333a-9e88-4314-9592-3185440c4d4b
+h	cpp:S5421/"!Global variables should be const.(¨Ã¾’ÿÿÿÿÿ8²Ò«Ã€2J$742bbc06-95c7-4ea9-afa9-1d55cf13a59e
+c	cpp:S54210"!Global variables should be const.(ºŒàÜ8ñ©Ùçÿ1J$eb232517-9777-4fe6-bd3a-16765482c3b1
+h	cpp:S54212"!Global variables should be const.(şû·×úÿÿÿÿ8Ì… Æÿ1J$ee3c5f71-fb6b-49f7-a09d-32140b5847b6
+q	cpp:S54214"/Global pointers should be const at every level.(ÕÀÿÛ8ò¡ÌÅÿ1J$00a12574-81bc-4a3e-8a9b-babe1170a162
+y	cpp:S5945M"2Use "std::string" instead of a C-style char array.(ºú„ışÿÿÿÿ8Ô‡Û¿ÿ1J$d5789744-f98f-4417-a1dd-2177a3841916
+y	cpp:S5945O"2Use "std::string" instead of a C-style char array.(û“ıÿÿÿÿ8ñîúÎÿ1J$9023724a-d7bb-4ad2-8a70-998f4c9b35ce
+h	cpp:S5827}"'Replace the redundant type with "auto".(ÙÚ%8¨ŒÔÃ€2J$37c85883-5db8-498b-a399-9773fec8d6f1
+o	cpp:S5827„"'Replace the redundant type with "auto".(¼‘«£üÿÿÿÿ8Ø¹áÃ€2J$244574fe-be01-4daf-81ee-7fb2cd9482b8
+’	cpp:S5025}"QReplace the use of "new" with an operation that automatically manages the memory.(ÙÚ%8­ŒÔÃ€2J$3979ae68-053e-46c7-98fb-4ffba9885b1e
+™	cpp:S5025„"QReplace the use of "new" with an operation that automatically manages the memory.(¼‘«£üÿÿÿÿ8³ŒÔÃ€2J$69092bae-a3ef-4328-9d2f-a315563eaa5a
+z	cpp:S5945µ"2Use "std::string" instead of a C-style char array.(¡ğôèøÿÿÿÿ8µŒÔÃ€2J$ff260635-9f65-4168-8326-eed619b00c9b
+—	cpp:S3776¼"TRefactor this function to reduce its Cognitive Complexity from 33 to the 25 allowed.(ğû¢©8ÉüòÃ€2J$79134e15-76da-4f07-9012-1bd36caf6c37
+¾cpp:S995¼"|Make the type of this parameter a reference-to-const. The current type of "jsonObject" is "class ArduinoJson::JsonObject &".(ğû¢©8í³©Ä€2J$560e6ef0-6cda-435e-92f2-a9ff91ae4db9
+™	cpp:S5025ê"QReplace the use of "new" with an operation that automatically manages the memory.(ª“¸³ÿÿÿÿÿ8å¹áÃ€2J$7a65d49a-e649-411e-8290-2490f9a84197
+z	cpp:S5945©"2Use "std::string" instead of a C-style char array.(¡ğôèøÿÿÿÿ8ĞüòÃ€2J$08f48d88-9d29-4e12-a2c1-9736f39336fb
+¾cpp:S995¸"|Make the type of this parameter a reference-to-const. The current type of "jsonObject" is "class ArduinoJson::JsonObject &".(õı´ö8ô³©Ä€2J$63a91e8e-6cc2-492c-b158-b6c8b8c21f94
+q	cpp:S5955í")Declare the variable "j" inside the loop.(³™Ìæøÿÿÿÿ8ÔüòÃ€2J$f7fec46b-05d4-4875-89a9-6b89d64a3c73
+l	cpp:S5955î")Declare the variable "i" inside the loop.(ñ«ß¾8ÔüòÃ€2J$9be572ea-919a-4e0b-8c78-85aedfe94318
+~	cpp:S1172è";Remove the unused parameter "parameter" or make it unnamed.(»ñ£‚8ÔüòÃ€2J$b8f22a03-78aa-4b58-9a83-b0c07b24d636
+¢cpp:S995è"`Make the type of this parameter a pointer-to-const. The current type of "parameter" is "void *".(»ñ£‚8ÔüòÃ€2J$37635393-0478-43e3-8d17-380cebe10522
+x	cpp:S1659ê"0Define each identifier in a dedicated statement.(ı²Çƒşÿÿÿÿ8ÔüòÃ€2J$9c9dcb54-7db7-454c-b8e7-8c06f417b1d7
+|	cpp:S5008è"9Replace this use of "void *" with a more meaningful type.(»ñ£‚8ÕüòÃ€2J$5f1f8767-41bd-47f5-92ea-e7f06db515c6
