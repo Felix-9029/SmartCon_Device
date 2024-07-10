@@ -1,0 +1,16 @@
+
+	cpp:S3624"ËExplicitly define or delete the missing copy assignment operator so that it will not be implicitly provided. Additionally, you may consider defining the move assignment operator and the move constructor.(¼óïÿ8Ö¢Ã€2J$8d344abe-69b9-48cf-b2e4-baaff5bd7940
+‘	cpp:S4963"ORemove this class' copy constructor so that the class follows the rule of Zero.(¼óïÿ8ëÊŞÀÀ1J$46536e77-d32c-47ed-a6cc-04db4e61b50b
+t	cpp:S5945"2Use "std::string" instead of a C-style char array.(–ÙÊµ8¹ì©Òÿ1J$fd74acbd-9c18-49dd-8322-3fe530318143
+y	cpp:S5945t"2Use "std::string" instead of a C-style char array.(Ì‹µ—ûÿÿÿÿ8»ú£Óÿ1J$afa55637-d17d-4a74-8f69-ff07cc19a24f
+£cpp:S995t"]Make the type of this parameter a pointer-to-const. The current type of "buffer" is "char *".(Ì‹µ—ûÿÿÿÿ8»ú£Óÿ1J$e2592bef-b637-46b6-b245-523f06960b23
+¨	cpp:S3230{"fDo not assign data members in a constructor. Initialize member "_colorMode" in an initialization list.(‚¾¹ö8»ú£Óÿ1J$67c7d5b3-7613-4605-9e84-0906b0739da8
+¡	cpp:S3230|"`Do not assign data members in a constructor. Initialize member "_pin" in an initialization list.(´òÛ8»ú£Óÿ1J$710a5f15-e32c-40de-88e3-6314c88cd047
+¬	cpp:S3230}"eDo not assign data members in a constructor. Initialize member "_ledCount" in an initialization list.(¢íùÿÿÿÿ8»ú£Óÿ1J$ed2b09d7-198d-463d-8161-75462309b536
+«	cpp:S3230~"dDo not assign data members in a constructor. Initialize member "_stateOn" in an initialization list.(÷â¨‡ûÿÿÿÿ8»ú£Óÿ1J$4b50cf1d-74c3-4ad9-b671-a52c5ddfce57
+©	cpp:S3230"gDo not assign data members in a constructor. Initialize member "_brightness" in an initialization list.(”›•ï8»ú£Óÿ1J$a1ece1b8-2d61-4dc6-a874-bbc566ffc4c4
+£	cpp:S3230€"`Do not assign data members in a constructor. Initialize member "_red" in an initialization list.(ãü²€8»ú£Óÿ1J$b7b19ead-d633-4996-bc1e-602de7601510
+¥	cpp:S3230"bDo not assign data members in a constructor. Initialize member "_green" in an initialization list.(Ï×ÓÔ8»ú£Óÿ1J$0e35d865-f4fe-4016-b4e1-6cda0fde257d
+¤	cpp:S3230‚"aDo not assign data members in a constructor. Initialize member "_blue" in an initialization list.(è£¡8»ú£Óÿ1J$49944e5e-c659-44ef-98c5-8a852cb2fba9
+ª	cpp:S3230ƒ"bDo not assign data members in a constructor. Initialize member "_white" in an initialization list.(Ò‰âÀøÿÿÿÿ8»ú£Óÿ1J$6873f7b5-9185-4246-a0b4-704b0b32948f
+®	cpp:S3230„"fDo not assign data members in a constructor. Initialize member "_animation" in an initialization list.(Ÿ–ªúÿÿÿÿ8»ú£Óÿ1J$957a1890-9d55-4a88-95b0-a24c489052ce
