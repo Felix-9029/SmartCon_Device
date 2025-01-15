@@ -7,7 +7,10 @@ file_to_update=".pio/build/esp32dev/firmware.bin"
 private_key_path="./private_key.pem"
 
 # Aufforderung zur Eingabe der Serveradresse
-read -p "Geben Sie die Serveradresse: " server_base
+#read -p "Geben Sie die Serveradresse: " server_base
+
+# Der Endpunkt des Servers
+server_base="10.10.30.99"
 
 # Der Endpunkt des Servers wird automatisch ergänzt
 server_endpoint="${server_base}/api/update"
@@ -25,7 +28,9 @@ if [ ! -f "$private_key_path" ]; then
 fi
 
 # Signieren des binären Hashes mit dem privaten Schlüssel
-signature=$(sha256sum "$file_to_update" | openssl dgst -sha256 -sign "$private_key_path" | openssl base64)
+signature=$(openssl dgst -sign "$private_key_path" -keyform PEM -sha256 -binary "$file_to_update" | openssl base64)
+echo "Signatur: $signature"
+
 
 # Senden der Datei mit der signierten Hash-Signatur im Header
 curl -X POST "$server_endpoint" \
