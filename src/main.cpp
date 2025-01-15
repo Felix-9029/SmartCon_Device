@@ -161,8 +161,9 @@ void setupRouting() {
 
 // ------------------------------------- OTA - INSECURE -------------------------------------
 std::map<String, std::vector<uint8_t>> clientDataMap;
-void handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-    if (!index) {
+void handleSystemUpdate(AsyncWebServerRequest *request, String _filename, size_t index, uint8_t *data, size_t len, bool final) {
+
+/*    if (!index) {
         Serial.println("Update started");
         size_t update_content_len = request->contentLength();
 
@@ -185,8 +186,7 @@ void handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t 
         }
     }
 
-    return;
-
+    return;*/
 
 
     // TODO WIP
@@ -194,6 +194,11 @@ void handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t 
     String clientKey = request->client()->remoteIP().toString(); // Eindeutige Kennung des Clients
 
     if (!index) {
+        if (!request->hasHeader("x-update-hash")) {
+            request->send(400, "application/json", "{\"error\":\"Missing x-update-hash header\"}");
+            return;
+        }
+
         Serial.println("Update started");
         size_t update_content_len = request->contentLength();
 
@@ -211,25 +216,32 @@ void handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t 
         std::vector<uint8_t>& fullDataVector = clientDataMap[clientKey];
         size_t fullDataLength = fullDataVector.size();
 
-        uint8_t *fullData = new unsigned char[fullDataLength];
+        auto *fullData = new unsigned char[fullDataLength];
         std::copy(fullDataVector.begin(), fullDataVector.end(), fullData);
 
-        std::string expectedHashEncryptedBase64;
-        size_t maxDecodedLength = expectedHashEncryptedBase64.length() * 3 / 4;
-        unsigned char *outputBuffer = new unsigned char[maxDecodedLength + 1]; // +1 für Null-Terminierung
-        size_t outputLength = 0;
-        int ret = mbedtls_base64_decode(outputBuffer, maxDecodedLength, &outputLength, reinterpret_cast<const unsigned char *>(expectedHashEncryptedBase64.c_str()), expectedHashEncryptedBase64.length());
+        AsyncWebHeader const* xUpdateHashHeader = request->getHeader("x-update-hash");
+        std::string encodedSignature = xUpdateHashHeader->value().c_str();
 
-        if (ret == 0) {
-            outputBuffer[outputLength] = '\0';
+        // Determine the required buffer size for the decoded data
+        size_t signatureLength = 0;
+        mbedtls_base64_decode(nullptr, 0, &signatureLength, reinterpret_cast<const unsigned char *>(encodedSignature.c_str()), encodedSignature.length());
+
+        // Allocate the buffer with the required size
+        auto *signature = new unsigned char[signatureLength + 1]; // +1 for null-termination
+
+        // Decode the base64 encoded string
+        int returnCode = mbedtls_base64_decode(signature, signatureLength, &signatureLength, reinterpret_cast<const unsigned char *>(encodedSignature.c_str()), encodedSignature.length());
+
+        if (returnCode == 0) {
+            signature[signatureLength] = '\0';
         }
         else {
             request->send(500, "text/plain", "Failed to base64 decode expectedHashEncrypted.");
         }
 
-        bool isValid = verifySignature(fullData, fullDataLength, outputBuffer, outputLength);
+        bool isValid = verifySignature(fullData, fullDataLength, signature, signatureLength);
         clientDataMap.erase(clientKey);
-        delete[] outputBuffer;
+        delete[] signature;
 
         if (!isValid) {
             request->send(400, "text/plain", "Signature invalid.");
@@ -255,36 +267,24 @@ bool verifySignature(const unsigned char *fullData, size_t fullDataLength, const
 
     mbedtls_pk_init(&pk);
 
-    // Lade den öffentlichen Schlüssel
-    if ((ret = mbedtls_pk_parse_public_key(&pk, publicKey, sizeof(publicKey))) != 0) {
+    // Load the public key
+    if ((ret = mbedtls_pk_parse_public_key(&pk, publicKey, strlen((const char *)publicKey) + 1)) != 0) {
         mbedtls_pk_free(&pk);
         return false;
     }
 
-    // Berechne den Hash der Daten
+    // Calculate the hash of the data
     if ((ret = mbedtls_md(mbedtls_md_info_from_type(md_type), fullData, fullDataLength, hash)) != 0) {
         mbedtls_pk_free(&pk);
         return false;
     }
 
-    Serial.println("Hash:");
-    for (int i = 0; i < 32; i++) {
-        Serial.printf("%02x", hash[i]);
-    }
-    Serial.println();
-
-    Serial.println("Signature:");
-    for (int i = 0; i < signatureLength; i++) {
-        Serial.printf("%02x", signature[i]);
-    }
-    Serial.println();
-
-    // Verifiziere die Signatur
+    // Verify the signature
     ret = mbedtls_pk_verify(&pk, md_type, hash, 0, signature, signatureLength);
 
     mbedtls_pk_free(&pk);
 
-    return ret == 0; // Gibt true zurück, wenn die Verifizierung erfolgreich war
+    return ret == 0; // Return true if the verification was successful
 }
 
 // ------------------------------------- handle values from net get -------------------------------------
