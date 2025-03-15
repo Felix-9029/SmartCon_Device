@@ -42,6 +42,6 @@ void loop() {
     if (WiFiClass::status() != WL_CONNECTED) {
         Serial.println("Connection lost.");
         wifiManager.connectToWifi(SSID, PWD);
-        wait(10);
+        Helper::wait(10);
     }
 }

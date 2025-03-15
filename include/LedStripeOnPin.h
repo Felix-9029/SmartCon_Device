@@ -1,3 +1,6 @@
+#ifndef LEDSTRIPEONPIN_H
+#define LEDSTRIPEONPIN_H
+
 #pragma once
 
 #include <array>
@@ -190,3 +193,5 @@ public:
         return jsonDocument;
     }
 };
+
+#endif //LEDSTRIPEONPIN_H

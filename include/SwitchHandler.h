@@ -7,6 +7,8 @@
 
 #include "ESPAsyncWebServer.h"
 #include "ArduinoJson.h"
+#include <Helper.h>
+#include <SwitchOnPin.h>
 
 class SwitchHandler {
 public:
@@ -14,6 +16,9 @@ public:
     void handleGet(AsyncWebServer* server);
     void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject);
     void handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject);
+
+private:
+    std::vector<SwitchOnPin *> switchOnPinList;
 };
 
 #endif //SWITCHHANDLER_H
