@@ -56,7 +56,7 @@ void UpdateHandler::handleSystemUpdate(AsyncWebServerRequest *request, String fi
 
             mbedtls_pk_context pk;
             mbedtls_pk_init(&pk);
-            mbedtls_pk_parse_public_key(&pk, publicKey, sizeof(publicKey));
+            mbedtls_pk_parse_public_key(&pk, reinterpret_cast<const unsigned char *>(publicKey), sizeof(publicKey));
 
             size_t hashLength = 16;
 

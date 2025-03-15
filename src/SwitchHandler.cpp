@@ -6,8 +6,6 @@
 
 using namespace std;
 
-SwitchHandler::SwitchHandler(WebServerManager &webServerManager) : webServerManager(webServerManager) {}
-
 void SwitchHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
@@ -75,7 +73,7 @@ short pin;
     if (!containsPin) {
         return; // block adding new pins
         switchOnPinList.push_back(switchOnPin);
-        webServerManager.reset();
+        webServerManager->reset();
     }
 
     request->send(200, "application/json", "{}");
@@ -98,7 +96,7 @@ void SwitchHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jso
     for (SwitchOnPin *switchOnPinTmp: switchOnPinList) {
         if (switchOnPinTmp->getPin() == pin) {
             switchOnPinList.erase(std::remove(switchOnPinList.begin(), switchOnPinList.end(), switchOnPinTmp), switchOnPinList.end());
-        	webServerManager.reset();
+        	webServerManager->reset();
             break;
         }
     }

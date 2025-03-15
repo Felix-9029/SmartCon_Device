@@ -12,10 +12,13 @@
 
 #ifdef LED
 #include "LedHandler.h"
+class LedHandler;
 #elif SWITCH
 #include "SwitchHandler.h"
+class SwitchHandler;
 #else // fallback to switch
 #include "SwitchHandler.h"
+class SwitchHandler;
 #endif
 
 class WebServerManager {
@@ -25,14 +28,14 @@ public:
     void reset();
 
 private:
-    AsyncWebServer* server;
-    UpdateHandler updateHandler;
+    AsyncWebServer* server = nullptr;
+    UpdateHandler* updateHandler = nullptr;
 #ifdef LED
-    LedHandler deviceHandler;
+    LedHandler* deviceHandler = nullptr;
 #elif SWITCH
-    SwitchHandler deviceHandler;
+    SwitchHandler* deviceHandler = nullptr;
 #else // fallback to switch
-    SwitchHandler deviceHandler;
+    SwitchHandler* deviceHandler = nullptr;
 #endif
 };
 

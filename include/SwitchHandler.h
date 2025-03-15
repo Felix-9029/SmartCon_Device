@@ -11,17 +11,19 @@
 #include "SwitchOnPin.h"
 #include "WebServerManager.h"
 
+class WebServerManager;
+
 class SwitchHandler {
 public:
-    SwitchHandler(WebServerManager &webServerManager);
+    SwitchHandler(WebServerManager *webServerManager);
     void handlePinListGet(AsyncWebServerRequest *request);
     void handleGet(AsyncWebServer* server);
     void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject);
     void handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject);
 
 private:
-    WebServerManager &webServerManager;
-    std::vector<SwitchOnPin *> switchOnPinList;
+    WebServerManager *webServerManager;
+    std::vector<SwitchOnPin *> switchOnPinList = {};
 };
 
 #endif //SWITCHHANDLER_H

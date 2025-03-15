@@ -12,9 +12,12 @@
 #include "Adafruit_NeoPixel.h"
 #include "WebServerManager.h"
 
+
+class WebServerManager;
+
 class LedHandler {
 public:
-    LedHandler(WebServerManager &webServerManager);
+    LedHandler(WebServerManager *webServerManager);
     void handlePinListGet(AsyncWebServerRequest *request);
     void handleGet(AsyncWebServer* server);
     void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject);
@@ -22,7 +25,7 @@ public:
     [[noreturn]] static void animationSet(void *parameter);
 
 private:
-    WebServerManager &webServerManager;
+    WebServerManager *webServerManager;
     void setColor(uint32_t color);
     uint32_t wheel(byte wheelPos);
 
