@@ -110,10 +110,10 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
             AnimationTask = nullptr;
         }
         xTaskCreate(
-                animationSet,             /* Task function. */
+                LedHandler::animationSet,             /* Task function. */
                 "AnimationTask",             /* name of task. */
                 10000,                   /* Stack size of task */
-                nullptr,                /* parameter of the task */
+                this,                /* parameter of the task */
                 1,                          /* priority of the task */
                 &AnimationTask          /* Task handle to keep track of created task */
         );
@@ -125,8 +125,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
 
     if (!containsPin) {
         ledStripeOnPinList.push_back(ledStripeOnPin);
-        server->reset();
-        setupRouting();
+        webServerManager.reset();
     }
 
     request->send(200, "application/json", "{}");
@@ -145,8 +144,7 @@ void LedHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jsonOb
     for (LedStripeOnPin *ledStripeOnPinTmp: ledStripeOnPinList) {
         if (ledStripeOnPinTmp->getPin() == pin) {
             ledStripeOnPinList.erase(std::remove(ledStripeOnPinList.begin(), ledStripeOnPinList.end(), ledStripeOnPinTmp), ledStripeOnPinList.end());
-            server->reset();
-            setupRouting();
+        	webServerManager.reset();
             break;
         }
     }
@@ -182,14 +180,15 @@ uint32_t LedHandler::wheel(byte wheelPos) {
 
 [[noreturn]] void LedHandler::animationSet(void *parameter) {
     // TODO add globalAnimation with duration, (multiple) colors, length
+    LedHandler* handler = static_cast<LedHandler*>(parameter);
     uint16_t i, j;
 
     while (true) {
         for (j = 0; j < 256; j++) {
-            for (i = 0; i < strip.numPixels(); i++) {
-                strip.setPixelColor(i, wheel((i + j) & 255));
+            for (i = 0; i < handler->strip.numPixels(); i++) {
+                handler->strip.setPixelColor(i, handler->wheel((i + j) & 255));
             }
-            strip.show();
+            handler->strip.show();
             Helper::wait(100);
         }
     }

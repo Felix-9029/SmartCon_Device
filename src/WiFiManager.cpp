@@ -31,7 +31,7 @@ void WiFiManager::connectToWifi(const char* ssid, const char* password) {
         }
         Serial.print(".");
         digitalWrite(SYSTEM_LED, !digitalRead(SYSTEM_LED));
-        wait(800);
+        Helper::wait(800);
     }
     digitalWrite(SYSTEM_LED, 0);
 
