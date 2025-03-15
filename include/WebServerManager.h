@@ -22,7 +22,7 @@ class WebServerManager {
 public:
     void start();
     void setupRouting();
-    void handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
+    void reset();
 
 private:
     AsyncWebServer* server;

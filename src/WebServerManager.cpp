@@ -41,3 +41,8 @@ void WebServerManager::setupRouting() {
 
     server->begin();
 }
+
+void WebServerManager::reset() {
+    server->reset();
+    setupRouting();
+}
