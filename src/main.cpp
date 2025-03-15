@@ -35,6 +35,7 @@ void setup() {
     digitalWrite(SYSTEM_LED, LOW);
     wifiManager.init();
     wifiManager.connectToWifi(SSID, PWD);
+    webServerManager.start();
     webServerManager.setupRouting();
 }
 

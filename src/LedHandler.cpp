@@ -125,7 +125,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
 
     if (!containsPin) {
         ledStripeOnPinList.push_back(ledStripeOnPin);
-        webServerManager.reset();
+        webServerManager->reset();
     }
 
     request->send(200, "application/json", "{}");
@@ -144,7 +144,7 @@ void LedHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jsonOb
     for (LedStripeOnPin *ledStripeOnPinTmp: ledStripeOnPinList) {
         if (ledStripeOnPinTmp->getPin() == pin) {
             ledStripeOnPinList.erase(std::remove(ledStripeOnPinList.begin(), ledStripeOnPinList.end(), ledStripeOnPinTmp), ledStripeOnPinList.end());
-        	webServerManager.reset();
+        	webServerManager->reset();
             break;
         }
     }
