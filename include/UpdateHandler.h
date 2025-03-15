@@ -12,12 +12,10 @@
 
 class UpdateHandler {
 public:
+    void handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
 
 private:
-
-};
-
-const unsigned char publicKey[453] = R"rawliteral(
+    const unsigned char publicKey[453] = R"rawliteral(
 -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAroYF67mLl0qbzzC5UJDg
 P9x7pSZ7lsxT7mZG0/C7ZGFqBnzEetuMJgiRtU/OywfCTm6KoC6TlRgblWYZov7x
@@ -28,7 +26,6 @@ Gendl9eO8Z7LfxkCWlxqE6b42H6SUWQNa/PG09BWRi/7063kphXtZP2GVZw7sRDh
 sQIDAQAB
 -----END PUBLIC KEY-----
 )rawliteral";
-
-void handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
+};
 
 #endif //UPDATEHANDLER_H

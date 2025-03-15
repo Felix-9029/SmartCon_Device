@@ -4,7 +4,7 @@
 
 #include "UpdateHandler.h"
 
-void handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+void UpdateHandler::handleSystemUpdate(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
     if (!index) {
         if (!request->hasHeader("x-update-hash")) {
             request->send(400, "application/json", "{\"error\":\"Missing x-update-hash header\"}");

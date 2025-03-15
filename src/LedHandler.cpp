@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void handlePinListGet(AsyncWebServerRequest *request) {
+void LedHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
 
@@ -19,7 +19,7 @@ void handlePinListGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", buffer);
 }
 
-void handleGet(AsyncWebServer* server) {
+void LedHandler::handleGet(AsyncWebServer* server) {
     for (const LedStripeOnPin *ledStripeOnPinTmp: ledStripeOnPinList) {
         string path = "/api/pin/";
         path.append(to_string(ledStripeOnPinTmp->getPin()));
@@ -29,9 +29,9 @@ void handleGet(AsyncWebServer* server) {
     }
 }
 
-void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject) {
+void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject) {
     short pin;
-    if (jsonObject.containsKey("pin")) {
+    if (jsonObject["pin"].is<short>()) {
         pin = jsonObject["pin"];
     }
     else {
@@ -40,26 +40,7 @@ void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject) {
     }
 
     // exclude unusable pins
-    if (pin < 0 // does not exist
-        || pin == 0 // boot mode (BOOT button)
-        || pin == 1 // TX
-        || pin == 2 // internal SYSTEM_LED
-        || pin == 3 // RX
-        || (pin >= 6 && pin <= 11) // flash pins
-
-        // || pin == 12 // MUST be low on startup AND blocked only in dev mode -> debugging port
-        // || pin == 13 // blocked only in dev mode -> debugging port
-        // || pin == 14 // blocked only in dev mode -> debugging port
-        // || pin == 15 // blocked only in dev mode -> debugging port
-
-        || pin == 20 // does not exist
-        || pin == 24 // does not exist
-        || (pin >= 28 && pin <= 31) // does not exist
-        || (pin >= 34 && pin <= 36) // input only
-        || pin == 37 // does not exist
-        || pin == 38 // does not exist
-        || pin == 39 // input only
-        || pin >= 40 /* does not exist */) {
+    if (Helper::isPinUnusable(pin)) {
         request->send(404, "application/json", "{}");
         return;
     }
@@ -78,19 +59,19 @@ void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject) {
         ledStripeOnPin = new LedStripeOnPin();
     }
 
-    if (jsonObject.containsKey("colorMode")) {
+    if (jsonObject["colorMode"].is<boolean>()) {
         ledStripeOnPin->setColorMode(jsonObject["colorMode"]);
     }
-    if (jsonObject.containsKey("pin")) {
+    if (jsonObject["pin"].is<short>()) {
         ledStripeOnPin->setPin(jsonObject["pin"]);
     }
-    if (jsonObject.containsKey("ledCount")) {
+    if (jsonObject["ledCount"].is<int>()) {
         ledStripeOnPin->setLedCount(jsonObject["ledCount"]);
     }
-    if (jsonObject.containsKey("stateOn")) {
+    if (jsonObject["stateOn"].is<boolean>()) {
         ledStripeOnPin->setStateOn(jsonObject["stateOn"]);
     }
-    if (jsonObject.containsKey("brightness")) {
+    if (jsonObject["brightness"].is<uint32_t>()) {
         ledStripeOnPin->setBrightness(jsonObject["brightness"]);
     }
 
@@ -98,16 +79,16 @@ void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject) {
     strip.updateLength(ledStripeOnPin->getLedCount());
 
     if (ledStripeOnPin->getColorMode()) {
-        if (jsonObject.containsKey("red")) {
+        if (jsonObject["red"].is<uint32_t>()) {
             ledStripeOnPin->setRed(jsonObject["red"]);
         }
-        if (jsonObject.containsKey("green")) {
+        if (jsonObject["green"].is<uint32_t>()) {
             ledStripeOnPin->setGreen(jsonObject["green"]);
         }
-        if (jsonObject.containsKey("blue")) {
+        if (jsonObject["blue"].is<uint32_t>()) {
             ledStripeOnPin->setBlue(jsonObject["blue"]);
         }
-        if (jsonObject.containsKey("white")) {
+        if (jsonObject["white"].is<uint32_t>()) {
             ledStripeOnPin->setWhite(jsonObject["white"]);
         }
         if (AnimationTask != nullptr) {
@@ -151,9 +132,9 @@ void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject) {
     request->send(200, "application/json", "{}");
 }
 
-void handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject) {
+void LedHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject) {
     short pin;
-    if (jsonObject.containsKey("pin")) {
+    if (jsonObject["pin"].is<short>()) {
         pin = jsonObject["pin"];
     }
     else {
@@ -175,7 +156,7 @@ void handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject) {
 
 // ------------------------------------- strip set colors -------------------------------------
 
-void setColor(uint32_t color) {
+void LedHandler::setColor(uint32_t color) {
     uint16_t numPixels = strip.numPixels();
     for (uint16_t pixel = 0; pixel < numPixels; pixel++) {
         strip.setPixelColor(pixel, Adafruit_NeoPixel::gamma32(color));
@@ -185,7 +166,7 @@ void setColor(uint32_t color) {
 // ------------------------------------- strip set globalAnimation -------------------------------------
 
 // rainbow animation -> r - g - b - back to r.
-uint32_t wheel(byte wheelPos) {
+uint32_t LedHandler::wheel(byte wheelPos) {
     wheelPos = 255 - wheelPos;
     if (wheelPos < 85) {
         return Adafruit_NeoPixel::Color(255 - wheelPos * 3, 0, wheelPos * 3);
@@ -199,7 +180,7 @@ uint32_t wheel(byte wheelPos) {
 }
 
 
-[[noreturn]] void animationSet(void *parameter) {
+[[noreturn]] void LedHandler::animationSet(void *parameter) {
     // TODO add globalAnimation with duration, (multiple) colors, length
     uint16_t i, j;
 
@@ -209,7 +190,7 @@ uint32_t wheel(byte wheelPos) {
                 strip.setPixelColor(i, wheel((i + j) & 255));
             }
             strip.show();
-            wait(100);
+            Helper::wait(100);
         }
     }
 }

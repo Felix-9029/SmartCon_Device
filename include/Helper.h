@@ -7,8 +7,9 @@
 
 #include <Arduino.h>
 
-class Helper {};
-
-void wait(int interval);
+namespace Helper {
+    void wait(int interval);
+    boolean isPinUnusable(short pin);
+}
 
 #endif //HELPER_H
