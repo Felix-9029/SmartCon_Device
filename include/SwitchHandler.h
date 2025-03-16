@@ -11,6 +11,8 @@
 #include "SwitchOnPin.h"
 #include "WebServerManager.h"
 
+using namespace std;
+
 class WebServerManager;
 
 class SwitchHandler {
@@ -23,7 +25,7 @@ public:
 
 private:
     WebServerManager *webServerManager;
-    std::vector<SwitchOnPin *> switchOnPinList = {};
+    vector<SwitchOnPin *> switchOnPinList;
 };
 
 #endif //SWITCHHANDLER_H

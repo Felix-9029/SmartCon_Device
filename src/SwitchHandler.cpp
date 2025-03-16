@@ -10,7 +10,7 @@ void SwitchHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
 
-    for (SwitchOnPin const *switchOnPinTmp: switchOnPinList) {
+    for (const SwitchOnPin *switchOnPinTmp: this->switchOnPinList) {
         jsonArray.add(switchOnPinTmp->getPin());
     }
 
@@ -30,8 +30,8 @@ void SwitchHandler::handleGet(AsyncWebServer* server) {
 }
 
 void SwitchHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject) {
-short pin;
-    if (jsonObject["pin"].is<short>()) {
+    short pin;
+    if (jsonObject["pin"].is<JsonVariant>()) {
         pin = jsonObject["pin"];
     }
     else {
@@ -59,10 +59,10 @@ short pin;
         switchOnPin = new SwitchOnPin();
     }
 
-    if (jsonObject["pin"].is<short>()) {
+    if (jsonObject["pin"].is<JsonVariant>()) {
         switchOnPin->setPin(jsonObject["pin"]);
     }
-    if (jsonObject["stateOn"].is<boolean>()) {
+    if (jsonObject["stateOn"].is<JsonVariant>()) {
         switchOnPin->setStateOn(jsonObject["stateOn"]);
     }
 
@@ -71,7 +71,6 @@ short pin;
     switchOnPin->setBuffer(buffer);
 
     if (!containsPin) {
-        return; // block adding new pins
         switchOnPinList.push_back(switchOnPin);
         webServerManager->reset();
     }
@@ -85,7 +84,7 @@ void SwitchHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jso
     return;
 
     short pin;
-    if (jsonObject["pin"].is<short>()) {
+    if (jsonObject["pin"].is<JsonVariant>()) {
         pin = jsonObject["pin"];
     }
     else {
