@@ -24,8 +24,8 @@ public:
     void handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject);
 
 private:
-    WebServerManager *webServerManager;
-    vector<SwitchOnPin *> switchOnPinList;
+    WebServerManager *_webServerManager;
+    vector<SwitchOnPin *> _switchOnPinList;
 };
 
 #endif //SWITCHHANDLER_H

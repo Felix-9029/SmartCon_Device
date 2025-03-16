@@ -10,7 +10,7 @@ void SwitchHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
 
-    for (const SwitchOnPin *switchOnPinTmp: this->switchOnPinList) {
+    for (const SwitchOnPin *switchOnPinTmp: _switchOnPinList) {
         jsonArray.add(switchOnPinTmp->getPin());
     }
 
@@ -20,7 +20,7 @@ void SwitchHandler::handlePinListGet(AsyncWebServerRequest *request) {
 }
 
 void SwitchHandler::handleGet(AsyncWebServer* server) {
-    for (const SwitchOnPin *switchOnPinTmp: switchOnPinList) {
+    for (const SwitchOnPin *switchOnPinTmp: _switchOnPinList) {
         string path = "/api/pin/";
         path.append(to_string(switchOnPinTmp->getPin()));
         server->on(path.c_str(), HTTP_GET, [switchOnPinTmp](AsyncWebServerRequest *request) {
@@ -47,7 +47,7 @@ void SwitchHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonO
 
     boolean containsPin = false;
     SwitchOnPin *switchOnPin;
-    for (SwitchOnPin *switchOnPinTmp: switchOnPinList) {
+    for (SwitchOnPin *switchOnPinTmp: _switchOnPinList) {
         if (switchOnPinTmp->getPin() == pin) {
             switchOnPin = switchOnPinTmp;
             containsPin = true;
@@ -71,8 +71,8 @@ void SwitchHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonO
     switchOnPin->setBuffer(buffer);
 
     if (!containsPin) {
-        switchOnPinList.push_back(switchOnPin);
-        webServerManager->reset();
+        _switchOnPinList.push_back(switchOnPin);
+        _webServerManager->reset();
     }
 
     request->send(200, "application/json", "{}");
@@ -92,10 +92,10 @@ void SwitchHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jso
         return;
     }
 
-    for (SwitchOnPin *switchOnPinTmp: switchOnPinList) {
+    for (SwitchOnPin *switchOnPinTmp: _switchOnPinList) {
         if (switchOnPinTmp->getPin() == pin) {
-            switchOnPinList.erase(std::remove(switchOnPinList.begin(), switchOnPinList.end(), switchOnPinTmp), switchOnPinList.end());
-        	webServerManager->reset();
+            _switchOnPinList.erase(std::remove(_switchOnPinList.begin(), _switchOnPinList.end(), switchOnPinTmp), _switchOnPinList.end());
+        	_webServerManager->reset();
             break;
         }
     }
