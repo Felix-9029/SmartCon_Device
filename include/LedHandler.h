@@ -30,9 +30,9 @@ private:
     void setColor(uint32_t color);
     uint32_t wheel(byte wheelPos);
 
-    vector<LedStripeOnPin *> ledStripeOnPinList;
-    Adafruit_NeoPixel strip = Adafruit_NeoPixel(0, 0, NEO_RGBW + NEO_KHZ800);
-    TaskHandle_t AnimationTask = nullptr;
+    vector<LedStripeOnPin *> _ledStripeOnPinList;
+    Adafruit_NeoPixel _strip = Adafruit_NeoPixel(0, 0, NEO_RGBW + NEO_KHZ800);
+    TaskHandle_t _animationTask = nullptr;
 };
 
 #endif //LEDHANDLER_H

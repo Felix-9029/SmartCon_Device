@@ -10,11 +10,6 @@
 #include "ArduinoJson.h"
 
 class SwitchOnPin {
-    short _pin = 0;
-    bool _stateOn = false;
-
-    char _buffer[512] = { };
-
 public:
     // ------------------------------------- getter and setter -------------------------------------
     short getPin() const {
@@ -67,6 +62,12 @@ public:
         jsonObject["stateOn"] = this->getStateOn();
         return jsonDocument;
     }
+
+private:
+    short _pin = 0;
+    bool _stateOn = false;
+
+    char _buffer[512] = { };
 };
 
 #endif //SWITCHONPIN_H

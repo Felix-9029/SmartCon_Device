@@ -15,21 +15,6 @@ enum class Color {
 };
 
 class LedStripeOnPin {
-    bool _colorMode = true;
-    short _pin = 0;
-    int _ledCount = 0;
-    bool _stateOn = false;
-
-    uint32_t _brightness = 0;
-    uint32_t _red = 0;
-    uint32_t _green = 0;
-    uint32_t _blue = 0;
-    uint32_t _white = 0;
-
-    std::string _animation;
-
-    char _buffer[512] = { };
-
 public:
     // ------------------------------------- getter and setter -------------------------------------
     boolean getColorMode() const {
@@ -192,6 +177,22 @@ public:
         }
         return jsonDocument;
     }
+
+private:
+    bool _colorMode = true;
+    short _pin = 0;
+    int _ledCount = 0;
+    bool _stateOn = false;
+
+    uint32_t _brightness = 0;
+    uint32_t _red = 0;
+    uint32_t _green = 0;
+    uint32_t _blue = 0;
+    uint32_t _white = 0;
+
+    std::string _animation;
+
+    char _buffer[512] = { };
 };
 
 #endif //LEDSTRIPEONPIN_H

@@ -10,7 +10,7 @@ void LedHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
 
-    for (const LedStripeOnPin *ledStripeOnPinTmp: ledStripeOnPinList) {
+    for (const LedStripeOnPin *ledStripeOnPinTmp: _ledStripeOnPinList) {
         jsonArray.add(ledStripeOnPinTmp->getPin());
     }
 
@@ -20,7 +20,7 @@ void LedHandler::handlePinListGet(AsyncWebServerRequest *request) {
 }
 
 void LedHandler::handleGet(AsyncWebServer* server) {
-    for (const LedStripeOnPin *ledStripeOnPinTmp: ledStripeOnPinList) {
+    for (const LedStripeOnPin *ledStripeOnPinTmp: _ledStripeOnPinList) {
         string path = "/api/pin/";
         path.append(to_string(ledStripeOnPinTmp->getPin()));
         server->on(path.c_str(), HTTP_GET, [ledStripeOnPinTmp](AsyncWebServerRequest *request) {
@@ -47,7 +47,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
 
     boolean containsPin = false;
     LedStripeOnPin *ledStripeOnPin;
-    for (LedStripeOnPin *ledStripeOnPinTmp: ledStripeOnPinList) {
+    for (LedStripeOnPin *ledStripeOnPinTmp: _ledStripeOnPinList) {
         if (ledStripeOnPinTmp->getPin() == pin) {
             ledStripeOnPin = ledStripeOnPinTmp;
             containsPin = true;
@@ -75,8 +75,8 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
         ledStripeOnPin->setBrightness(jsonObject["brightness"]);
     }
 
-    strip.setPin(ledStripeOnPin->getPin());
-    strip.updateLength(ledStripeOnPin->getLedCount());
+    _strip.setPin(ledStripeOnPin->getPin());
+    _strip.updateLength(ledStripeOnPin->getLedCount());
 
     if (ledStripeOnPin->getColorMode()) {
         if (jsonObject["red"].is<JsonVariant>()) {
@@ -91,23 +91,23 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
         if (jsonObject["white"].is<JsonVariant>()) {
             ledStripeOnPin->setWhite(jsonObject["white"]);
         }
-        if (AnimationTask != nullptr) {
-            vTaskDelete(AnimationTask);
-            AnimationTask = nullptr;
+        if (_animationTask != nullptr) {
+            vTaskDelete(_animationTask);
+            _animationTask = nullptr;
         }
 
         setColor(Adafruit_NeoPixel::Color(ledStripeOnPin->applyBrightnessToLight(Color::Red),
                                           ledStripeOnPin->applyBrightnessToLight(Color::Green),
                                           ledStripeOnPin->applyBrightnessToLight(Color::Blue),
                                           ledStripeOnPin->getStateOn() ? ledStripeOnPin->getWhite() : 0));
-        strip.show();
+        _strip.show();
         Serial.printf("R: %d G: %d B: %d W: %d\n", ledStripeOnPin->getRed(), ledStripeOnPin->getGreen(), ledStripeOnPin->getBlue(), ledStripeOnPin->getWhite());
     }
     else {
         ledStripeOnPin->setAnimation(jsonObject["globalAnimation"].as<std::string>());
-        if (AnimationTask != nullptr) {
-            vTaskDelete(AnimationTask);
-            AnimationTask = nullptr;
+        if (_animationTask != nullptr) {
+            vTaskDelete(_animationTask);
+            _animationTask = nullptr;
         }
         xTaskCreate(
                 LedHandler::animationSet,             /* Task function. */
@@ -115,7 +115,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
                 10000,                   /* Stack size of task */
                 this,                /* parameter of the task */
                 1,                          /* priority of the task */
-                &AnimationTask          /* Task handle to keep track of created task */
+                &_animationTask          /* Task handle to keep track of created task */
         );
     }
 
@@ -124,7 +124,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
     ledStripeOnPin->setBuffer(buffer);
 
     if (!containsPin) {
-        ledStripeOnPinList.push_back(ledStripeOnPin);
+        _ledStripeOnPinList.push_back(ledStripeOnPin);
         webServerManager->reset();
     }
 
@@ -141,9 +141,9 @@ void LedHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jsonOb
         return;
     }
 
-    for (LedStripeOnPin *ledStripeOnPinTmp: ledStripeOnPinList) {
+    for (LedStripeOnPin *ledStripeOnPinTmp: _ledStripeOnPinList) {
         if (ledStripeOnPinTmp->getPin() == pin) {
-            ledStripeOnPinList.erase(std::remove(ledStripeOnPinList.begin(), ledStripeOnPinList.end(), ledStripeOnPinTmp), ledStripeOnPinList.end());
+            _ledStripeOnPinList.erase(std::remove(_ledStripeOnPinList.begin(), _ledStripeOnPinList.end(), ledStripeOnPinTmp), _ledStripeOnPinList.end());
         	webServerManager->reset();
             break;
         }
@@ -155,9 +155,9 @@ void LedHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jsonOb
 // ------------------------------------- strip set colors -------------------------------------
 
 void LedHandler::setColor(uint32_t color) {
-    uint16_t numPixels = strip.numPixels();
+    uint16_t numPixels = _strip.numPixels();
     for (uint16_t pixel = 0; pixel < numPixels; pixel++) {
-        strip.setPixelColor(pixel, Adafruit_NeoPixel::gamma32(color));
+        _strip.setPixelColor(pixel, Adafruit_NeoPixel::gamma32(color));
     }
 }
 
@@ -185,10 +185,10 @@ uint32_t LedHandler::wheel(byte wheelPos) {
 
     while (true) {
         for (j = 0; j < 256; j++) {
-            for (i = 0; i < handler->strip.numPixels(); i++) {
-                handler->strip.setPixelColor(i, handler->wheel((i + j) & 255));
+            for (i = 0; i < handler->_strip.numPixels(); i++) {
+                handler->_strip.setPixelColor(i, handler->wheel((i + j) & 255));
             }
-            handler->strip.show();
+            handler->_strip.show();
             Helper::wait(100);
         }
     }
