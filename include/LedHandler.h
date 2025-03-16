@@ -12,6 +12,7 @@
 #include "Adafruit_NeoPixel.h"
 #include "WebServerManager.h"
 
+using namespace std;
 
 class WebServerManager;
 
@@ -29,7 +30,7 @@ private:
     void setColor(uint32_t color);
     uint32_t wheel(byte wheelPos);
 
-    std::vector<LedStripeOnPin *> ledStripeOnPinList;
+    vector<LedStripeOnPin *> ledStripeOnPinList;
     Adafruit_NeoPixel strip = Adafruit_NeoPixel(0, 0, NEO_RGBW + NEO_KHZ800);
     TaskHandle_t AnimationTask = nullptr;
 };

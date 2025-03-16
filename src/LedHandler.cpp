@@ -10,7 +10,7 @@ void LedHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
 
-    for (LedStripeOnPin const *ledStripeOnPinTmp: ledStripeOnPinList) {
+    for (const LedStripeOnPin *ledStripeOnPinTmp: ledStripeOnPinList) {
         jsonArray.add(ledStripeOnPinTmp->getPin());
     }
 
@@ -31,7 +31,7 @@ void LedHandler::handleGet(AsyncWebServer* server) {
 
 void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject) {
     short pin;
-    if (jsonObject["pin"].is<short>()) {
+    if (jsonObject["pin"].is<JsonVariant>()) {
         pin = jsonObject["pin"];
     }
     else {
@@ -59,19 +59,19 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
         ledStripeOnPin = new LedStripeOnPin();
     }
 
-    if (jsonObject["colorMode"].is<boolean>()) {
+    if (jsonObject["colorMode"].is<JsonVariant>()) {
         ledStripeOnPin->setColorMode(jsonObject["colorMode"]);
     }
-    if (jsonObject["pin"].is<short>()) {
+    if (jsonObject["pin"].is<JsonVariant>()) {
         ledStripeOnPin->setPin(jsonObject["pin"]);
     }
-    if (jsonObject["ledCount"].is<int>()) {
+    if (jsonObject["ledCount"].is<JsonVariant>()) {
         ledStripeOnPin->setLedCount(jsonObject["ledCount"]);
     }
-    if (jsonObject["stateOn"].is<boolean>()) {
+    if (jsonObject["stateOn"].is<JsonVariant>()) {
         ledStripeOnPin->setStateOn(jsonObject["stateOn"]);
     }
-    if (jsonObject["brightness"].is<uint32_t>()) {
+    if (jsonObject["brightness"].is<JsonVariant>()) {
         ledStripeOnPin->setBrightness(jsonObject["brightness"]);
     }
 
@@ -79,16 +79,16 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
     strip.updateLength(ledStripeOnPin->getLedCount());
 
     if (ledStripeOnPin->getColorMode()) {
-        if (jsonObject["red"].is<uint32_t>()) {
+        if (jsonObject["red"].is<JsonVariant>()) {
             ledStripeOnPin->setRed(jsonObject["red"]);
         }
-        if (jsonObject["green"].is<uint32_t>()) {
+        if (jsonObject["green"].is<JsonVariant>()) {
             ledStripeOnPin->setGreen(jsonObject["green"]);
         }
-        if (jsonObject["blue"].is<uint32_t>()) {
+        if (jsonObject["blue"].is<JsonVariant>()) {
             ledStripeOnPin->setBlue(jsonObject["blue"]);
         }
-        if (jsonObject["white"].is<uint32_t>()) {
+        if (jsonObject["white"].is<JsonVariant>()) {
             ledStripeOnPin->setWhite(jsonObject["white"]);
         }
         if (AnimationTask != nullptr) {
@@ -133,7 +133,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
 
 void LedHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject) {
     short pin;
-    if (jsonObject["pin"].is<short>()) {
+    if (jsonObject["pin"].is<JsonVariant>()) {
         pin = jsonObject["pin"];
     }
     else {
