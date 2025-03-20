@@ -14,7 +14,7 @@ public:
     void connectToWifi(const char* ssid, const char* password);
 
 private:
-    byte mac[6] = {};
+    byte _mac[6] = {};
 };
 
 #endif //WIFIMANAGER_H

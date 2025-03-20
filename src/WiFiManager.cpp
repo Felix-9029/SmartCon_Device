@@ -9,9 +9,9 @@
 #endif
 
 void WiFiManager::init() {
-    WiFi.macAddress(mac);
+    WiFi.macAddress(_mac);
     char macPart[7 + 1];
-    sprintf(macPart, "_%02x%02x%02x", mac[3], mac[4], mac[5]);
+    sprintf(macPart, "_%02x%02x%02x", _mac[3], _mac[4], _mac[5]);
 
     std::string hostnameString = "EasyLED";
     hostnameString.append(macPart);
@@ -38,5 +38,5 @@ void WiFiManager::connectToWifi(const char* ssid, const char* password) {
     Serial.println("\nConnected.");
     Serial.printf("IP: %s\n", WiFi.localIP().toString().c_str());
     Serial.printf("Hostname: %s\n", WiFiClass::getHostname());
-    Serial.printf("MAC address: %02x:%02x:%02x:%02x:%02x:%02x\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    Serial.printf("MAC address: %02x:%02x:%02x:%02x:%02x:%02x\n", _mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
 }

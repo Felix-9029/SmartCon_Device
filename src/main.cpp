@@ -24,8 +24,6 @@
 
 using namespace std;
 
-// ------------------------------------- init -------------------------------------
-
 WiFiManager wifiManager;
 WebServerManager webServerManager;
 

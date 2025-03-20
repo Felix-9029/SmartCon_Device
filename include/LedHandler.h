@@ -26,7 +26,7 @@ public:
     [[noreturn]] static void animationSet(void *parameter);
 
 private:
-    WebServerManager *webServerManager;
+    WebServerManager *_webServerManager;
     void setColor(uint32_t color);
     uint32_t wheel(byte wheelPos);
 
