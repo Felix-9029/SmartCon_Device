@@ -18,6 +18,7 @@ class WebServerManager;
 class SwitchHandler {
 public:
     SwitchHandler(WebServerManager *webServerManager);
+    void handleGetServerType(AsyncWebServerRequest *request);
     void handlePinListGet(AsyncWebServerRequest *request);
     void handleGet(AsyncWebServer* server);
     void handlePost(AsyncWebServerRequest *request, JsonObject &jsonObject);
