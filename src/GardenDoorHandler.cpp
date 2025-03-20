@@ -50,6 +50,8 @@ void GardenDoorHandler::handlePost(AsyncWebServerRequest *request, JsonObject &j
         return;
     }
 
+    stopCountdown();
+
     if (stateOn) {
         if (jsonObject["time"].is<JsonVariant>()) {
             _timeInSec = jsonObject["time"];
@@ -67,9 +69,6 @@ void GardenDoorHandler::handlePost(AsyncWebServerRequest *request, JsonObject &j
         );
     }
     else {
-        vTaskDelete(_countdownTask);
-        _countdownTask = nullptr;
-
         digitalWrite(PIN, LOW);
     }
 
@@ -83,6 +82,12 @@ void GardenDoorHandler::handleDelete(AsyncWebServerRequest *request, JsonObject 
     request->send(405, "application/json", "{}");
 }
 
+void GardenDoorHandler::writeBuffer() {
+    char buffer[512];
+    serializeJson(_switchOnPin->getInfo(), buffer);
+    _switchOnPin->setBuffer(buffer);
+}
+
 void GardenDoorHandler::startCountdown(void *pvParameters) {
     GardenDoorHandler *gardenDoorHandler = (GardenDoorHandler *) pvParameters;
 
@@ -92,11 +97,13 @@ void GardenDoorHandler::startCountdown(void *pvParameters) {
     gardenDoorHandler->writeBuffer();
     digitalWrite(PIN, LOW);
 
+    gardenDoorHandler->_countdownTask = nullptr;
     vTaskDelete(nullptr);
 }
 
-void GardenDoorHandler::writeBuffer() {
-    char buffer[512];
-    serializeJson(_switchOnPin->getInfo(), buffer);
-    _switchOnPin->setBuffer(buffer);
+void GardenDoorHandler::stopCountdown() {
+    if (_countdownTask != nullptr) {
+        vTaskDelete(_countdownTask);
+        _countdownTask = nullptr;
+    }
 }

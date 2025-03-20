@@ -25,8 +25,9 @@ public:
     void handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject);
 
 private:
-    static void startCountdown(void *pvParameters);
     void writeBuffer();
+    static void startCountdown(void *pvParameters);
+    void stopCountdown();
 
     WebServerManager *_webServerManager;
     SwitchOnPin *_switchOnPin;
