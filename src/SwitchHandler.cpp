@@ -10,6 +10,10 @@ SwitchHandler::SwitchHandler(WebServerManager *webServerManager) {
     _webServerManager = webServerManager;
 }
 
+void SwitchHandler::handleGetServerType(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", "{\"type\": \"led\"}");
+}
+
 void SwitchHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
@@ -39,7 +43,7 @@ void SwitchHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonO
         pin = jsonObject["pin"];
     }
     else {
-        request->send(404, "application/json", "{}");
+        request->send(400, "application/json", "{}");
         return;
     }
 

@@ -10,6 +10,10 @@ void WebServerManager::start() {
 }
 
 void WebServerManager::setupRouting() {
+    _server->on("/api/device", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        _deviceHandler->handleGetServerType(request);
+    });
+
     _server->on("/api/update", HTTP_POST, [](AsyncWebServerRequest *request) {
         request->send(200);
     }, [this](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final) {

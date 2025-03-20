@@ -18,6 +18,10 @@ using DeviceHandler = LedHandler;
 #include "SwitchHandler.h"
 class SwitchHandler;
 using DeviceHandler = SwitchHandler;
+#elif GARDENDOOR
+#include "GardenDoorHandler.h"
+class GardenDoorHandler;
+using DeviceHandler = GardenDoorHandler;
 #else // fallback to switch
 #include "SwitchHandler.h"
 class SwitchHandler;

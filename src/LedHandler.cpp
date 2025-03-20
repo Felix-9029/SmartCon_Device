@@ -10,6 +10,9 @@ LedHandler::LedHandler(WebServerManager *webServerManager) {
     _webServerManager = webServerManager;
 }
 
+void LedHandler::handleGetServerType(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", "{\"type\": \"led\"}");
+}
 
 void LedHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
@@ -40,13 +43,13 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
         pin = jsonObject["pin"];
     }
     else {
-        request->send(404, "application/json", "{}");
+        request->send(400, "application/json", "{}");
         return;
     }
 
     // exclude unusable pins
     if (Helper::isPinUnusable(pin)) {
-        request->send(404, "application/json", "{}");
+        request->send(400, "application/json", "{}");
         return;
     }
 
@@ -115,7 +118,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
             _animationTask = nullptr;
         }
         xTaskCreate(
-                LedHandler::animationSet,             /* Task function. */
+                runAnimation,             /* Task function. */
                 "AnimationTask",             /* name of task. */
                 10000,                   /* Stack size of task */
                 this,                /* parameter of the task */
@@ -169,7 +172,7 @@ void LedHandler::setColor(uint32_t color) {
 // ------------------------------------- strip set globalAnimation -------------------------------------
 
 // rainbow animation -> r - g - b - back to r.
-uint32_t LedHandler::wheel(byte wheelPos) {
+uint32_t LedHandler::colorRainbowWheel(byte wheelPos) {
     wheelPos = 255 - wheelPos;
     if (wheelPos < 85) {
         return Adafruit_NeoPixel::Color(255 - wheelPos * 3, 0, wheelPos * 3);
@@ -183,17 +186,17 @@ uint32_t LedHandler::wheel(byte wheelPos) {
 }
 
 
-[[noreturn]] void LedHandler::animationSet(void *parameter) {
+[[noreturn]] void LedHandler::runAnimation(void *parameter) {
     // TODO add globalAnimation with duration, (multiple) colors, length
-    LedHandler* handler = static_cast<LedHandler*>(parameter);
+    LedHandler* ledHandler = static_cast<LedHandler*>(parameter);
     uint16_t i, j;
 
     while (true) {
         for (j = 0; j < 256; j++) {
-            for (i = 0; i < handler->_strip.numPixels(); i++) {
-                handler->_strip.setPixelColor(i, handler->wheel((i + j) & 255));
+            for (i = 0; i < ledHandler->_strip.numPixels(); i++) {
+                ledHandler->_strip.setPixelColor(i, ledHandler->colorRainbowWheel((i + j) & 255));
             }
-            handler->_strip.show();
+            ledHandler->_strip.show();
             Helper::wait(100);
         }
     }
