@@ -8,6 +8,7 @@
 #include "ESPAsyncWebServer.h"
 #include "ArduinoJson.h"
 #include "Helper.h"
+#include "SwitchOnPin.h"
 #include "WebServerManager.h"
 
 using namespace std;
@@ -25,10 +26,11 @@ public:
 
 private:
     static void startCountdown(void *pvParameters);
+    void writeBuffer();
 
     WebServerManager *_webServerManager;
-    bool _stateOn = false;
-    int _timeInSec = 10;
+    SwitchOnPin *_switchOnPin;
+    int _timeInSec = 3;
     TaskHandle_t _countdownTask = nullptr;
 };
 
