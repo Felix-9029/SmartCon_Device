@@ -23,6 +23,10 @@ void WebServerManager::setupRouting() {
     _deviceHandler->handleGet(_server);
 
     _server->on("/api/pin", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        if (request->url() != "/api/pin") {
+            request->send(404, "text/plain", "Page not found!");
+            return;
+        }
         _deviceHandler->handlePinListGet(request);
     });
 

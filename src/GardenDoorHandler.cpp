@@ -10,6 +10,9 @@ using namespace std;
 
 GardenDoorHandler::GardenDoorHandler(WebServerManager *webServerManager) {
     _webServerManager = webServerManager;
+    _switchOnPin = new SwitchOnPin();
+    _switchOnPin->setPin(PIN);
+    writeBuffer();
     pinMode(PIN, OUTPUT);
 }
 
@@ -30,16 +33,10 @@ void GardenDoorHandler::handlePinListGet(AsyncWebServerRequest *request) {
 
 void GardenDoorHandler::handleGet(AsyncWebServer* server) {
     string path = "/api/pin/";
-    path.append(to_string(PIN));
-    bool stateOn = _stateOn;
-    server->on(path.c_str(), HTTP_GET, [stateOn](AsyncWebServerRequest *request) {
-        char buffer[512];
-        JsonDocument jsonDocument;
-        jsonDocument.clear();
-        JsonObject jsonObject = jsonDocument.add<JsonObject>();
-        jsonObject["stateOn"] = stateOn;
-        serializeJson(jsonDocument, buffer);
-        request->send(200, "application/json", buffer);
+    SwitchOnPin *switchOnPinTmp = _switchOnPin;
+    path.append(to_string(switchOnPinTmp->getPin()));
+    server->on(path.c_str(), HTTP_GET, [switchOnPinTmp](AsyncWebServerRequest *request) {
+        request->send(200, "application/json", switchOnPinTmp->getBuffer());
     });
 }
 
@@ -76,6 +73,9 @@ void GardenDoorHandler::handlePost(AsyncWebServerRequest *request, JsonObject &j
         digitalWrite(PIN, LOW);
     }
 
+    _switchOnPin->setStateOn(stateOn);
+    writeBuffer();
+
     request->send(200, "application/json", "{}");
 }
 
@@ -88,6 +88,15 @@ void GardenDoorHandler::startCountdown(void *pvParameters) {
 
     Helper::wait(gardenDoorHandler->_timeInSec*1000);
 
-    gardenDoorHandler->_stateOn = false;
+    gardenDoorHandler->_switchOnPin->setStateOn(false);
+    gardenDoorHandler->writeBuffer();
     digitalWrite(PIN, LOW);
+
+    vTaskDelete(nullptr);
+}
+
+void GardenDoorHandler::writeBuffer() {
+    char buffer[512];
+    serializeJson(_switchOnPin->getInfo(), buffer);
+    _switchOnPin->setBuffer(buffer);
 }
