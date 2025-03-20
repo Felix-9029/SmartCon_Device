@@ -6,6 +6,10 @@
 
 using namespace std;
 
+SwitchHandler::SwitchHandler(WebServerManager *webServerManager) {
+    _webServerManager = webServerManager;
+}
+
 void SwitchHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
@@ -79,10 +83,6 @@ void SwitchHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonO
 }
 
 void SwitchHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jsonObject) {
-    // block deleting pins
-    request->send(404, "application/json", "{}");
-    return;
-
     short pin;
     if (jsonObject["pin"].is<JsonVariant>()) {
         pin = jsonObject["pin"];

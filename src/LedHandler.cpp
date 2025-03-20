@@ -6,6 +6,11 @@
 
 using namespace std;
 
+LedHandler::LedHandler(WebServerManager *webServerManager) {
+    _webServerManager = webServerManager;
+}
+
+
 void LedHandler::handlePinListGet(AsyncWebServerRequest *request) {
     JsonDocument jsonDocument;
     JsonArray jsonArray = jsonDocument.to<JsonArray>();
@@ -125,7 +130,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
 
     if (!containsPin) {
         _ledStripeOnPinList.push_back(ledStripeOnPin);
-        webServerManager->reset();
+        _webServerManager->reset();
     }
 
     request->send(200, "application/json", "{}");
@@ -144,7 +149,7 @@ void LedHandler::handleDelete(AsyncWebServerRequest *request, JsonObject &jsonOb
     for (LedStripeOnPin *ledStripeOnPinTmp: _ledStripeOnPinList) {
         if (ledStripeOnPinTmp->getPin() == pin) {
             _ledStripeOnPinList.erase(std::remove(_ledStripeOnPinList.begin(), _ledStripeOnPinList.end(), ledStripeOnPinTmp), _ledStripeOnPinList.end());
-        	webServerManager->reset();
+        	_webServerManager->reset();
             break;
         }
     }
