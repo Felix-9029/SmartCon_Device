@@ -74,9 +74,9 @@ void SwitchHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonO
         switchOnPin->setStateOn(jsonObject["stateOn"]);
     }
 
-    char buffer[512];
-    serializeJson(switchOnPin->getInfo(), buffer);
-    switchOnPin->setBuffer(buffer);
+    digitalWrite(switchOnPin->getPin(), switchOnPin->getStateOn());
+
+    switchOnPin->writeBuffer();
 
     if (!containsPin) {
         _switchOnPinList.push_back(switchOnPin);

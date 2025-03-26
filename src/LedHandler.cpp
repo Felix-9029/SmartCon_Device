@@ -53,7 +53,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
         return;
     }
 
-    boolean containsPin = false;
+    bool containsPin = false;
     LedStripeOnPin *ledStripeOnPin;
     for (LedStripeOnPin *ledStripeOnPinTmp: _ledStripeOnPinList) {
         if (ledStripeOnPinTmp->getPin() == pin) {
@@ -127,9 +127,7 @@ void LedHandler::handlePost(AsyncWebServerRequest *request, JsonObject &jsonObje
         );
     }
 
-    char buffer[512];
-    serializeJson(ledStripeOnPin->getInfo(), buffer);
-    ledStripeOnPin->setBuffer(buffer);
+    ledStripeOnPin->writeBuffer();
 
     if (!containsPin) {
         _ledStripeOnPinList.push_back(ledStripeOnPin);
