@@ -20,11 +20,11 @@ public:
         _pin = pin;
     }
 
-    boolean getStateOn() const {
+    bool getStateOn() const {
         return _stateOn;
     }
 
-    void setStateOn(boolean stateOn) {
+    void setStateOn(bool stateOn) {
         _stateOn = stateOn;
     }
 
@@ -34,6 +34,10 @@ public:
 
     void setBuffer(char buffer[512]) {
         strcpy(_buffer, buffer);
+    }
+
+    void writeBuffer() {
+        serializeJson(getInfo(), _buffer);
     }
 
     SwitchOnPin() = default;

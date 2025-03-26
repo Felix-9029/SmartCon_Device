@@ -4,7 +4,9 @@
 
 #include "GardenDoorHandler.h"
 
-#define PIN 13
+#define PIN 14
+#define ON HIGH
+#define OFF LOW
 
 using namespace std;
 
@@ -14,6 +16,7 @@ GardenDoorHandler::GardenDoorHandler(WebServerManager *webServerManager) {
     _switchOnPin->setPin(PIN);
     writeBuffer();
     pinMode(PIN, OUTPUT);
+    digitalWrite(PIN, OFF);
 }
 
 void GardenDoorHandler::handleGetServerType(AsyncWebServerRequest *request) {
@@ -56,8 +59,11 @@ void GardenDoorHandler::handlePost(AsyncWebServerRequest *request, JsonObject &j
         if (jsonObject["time"].is<JsonVariant>()) {
             _timeInSec = jsonObject["time"];
         }
+        else {
+            _timeInSec = 3;
+        }
 
-        digitalWrite(PIN, HIGH);
+        digitalWrite(PIN, ON);
 
         xTaskCreate(
                 startCountdown,             /* Task function. */
@@ -69,7 +75,7 @@ void GardenDoorHandler::handlePost(AsyncWebServerRequest *request, JsonObject &j
         );
     }
     else {
-        digitalWrite(PIN, LOW);
+        digitalWrite(PIN, OFF);
     }
 
     _switchOnPin->setStateOn(stateOn);
@@ -95,7 +101,7 @@ void GardenDoorHandler::startCountdown(void *pvParameters) {
 
     gardenDoorHandler->_switchOnPin->setStateOn(false);
     gardenDoorHandler->writeBuffer();
-    digitalWrite(PIN, LOW);
+    digitalWrite(PIN, OFF);
 
     gardenDoorHandler->_countdownTask = nullptr;
     vTaskDelete(nullptr);

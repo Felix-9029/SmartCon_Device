@@ -17,11 +17,11 @@ enum class Color {
 class LedStripeOnPin {
 public:
     // ------------------------------------- getter and setter -------------------------------------
-    boolean getColorMode() const {
+    bool getColorMode() const {
         return _colorMode;
     }
 
-    void setColorMode(boolean colorMode) {
+    void setColorMode(bool colorMode) {
         _colorMode = colorMode;
     }
 
@@ -41,11 +41,11 @@ public:
         _ledCount = ledCount;
     }
 
-    boolean getStateOn() const {
+    bool getStateOn() const {
         return _stateOn;
     }
 
-    void setStateOn(boolean stateOn) {
+    void setStateOn(bool stateOn) {
         _stateOn = stateOn;
     }
 
@@ -103,6 +103,10 @@ public:
 
     void setBuffer(char buffer[512]) {
         strcpy(_buffer, buffer);
+    }
+
+    void writeBuffer() {
+        serializeJson(getInfo(), _buffer);
     }
 
     LedStripeOnPin() = default;
