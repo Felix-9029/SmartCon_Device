@@ -8,7 +8,6 @@
 #include "Arduino.h"
 
 namespace Helper {
-    void wait(int interval);
     boolean isPinUnusable(short pin);
 }
 

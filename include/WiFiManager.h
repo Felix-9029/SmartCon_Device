@@ -6,7 +6,6 @@
 #define WIFIMANAGER_H
 
 #include "WiFi.h"
-#include "Helper.h"
 
 class WiFiManager {
 public:

@@ -31,7 +31,8 @@ void WiFiManager::connectToWifi(const char* ssid, const char* password) {
         }
         Serial.print(".");
         digitalWrite(SYSTEM_LED, !digitalRead(SYSTEM_LED));
-        Helper::wait(800);
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     digitalWrite(SYSTEM_LED, 0);
 

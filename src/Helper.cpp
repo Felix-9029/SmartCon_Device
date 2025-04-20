@@ -4,15 +4,6 @@
 
 #include "Helper.h"
 
-void Helper::wait(int interval) {
-    unsigned long endMillis = millis() + interval;
-    while (true) {
-        if (endMillis <= millis()) {
-            break;
-        }
-    }
-}
-
 boolean Helper::isPinUnusable(short pin) {
     return pin < 0 // does not exist
         || pin == 0 // boot mode (BOOT button)

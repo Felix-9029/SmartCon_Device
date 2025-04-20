@@ -4,7 +4,7 @@
 
 #include "GardenDoorHandler.h"
 
-#define PIN 14
+#define PIN 13
 #define ON HIGH
 #define OFF LOW
 
@@ -97,7 +97,7 @@ void GardenDoorHandler::writeBuffer() {
 void GardenDoorHandler::startCountdown(void *pvParameters) {
     GardenDoorHandler *gardenDoorHandler = (GardenDoorHandler *) pvParameters;
 
-    Helper::wait(gardenDoorHandler->_timeInSec*1000);
+    vTaskDelay(gardenDoorHandler->_timeInSec*1000 / portTICK_PERIOD_MS);
 
     gardenDoorHandler->_switchOnPin->setStateOn(false);
     gardenDoorHandler->writeBuffer();

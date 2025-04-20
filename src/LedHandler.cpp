@@ -195,7 +195,7 @@ uint32_t LedHandler::colorRainbowWheel(byte wheelPos) {
                 ledHandler->_strip.setPixelColor(i, ledHandler->colorRainbowWheel((i + j) & 255));
             }
             ledHandler->_strip.show();
-            Helper::wait(100);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
         }
     }
 }

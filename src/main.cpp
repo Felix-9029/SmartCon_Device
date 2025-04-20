@@ -18,7 +18,6 @@
 
 #include "WiFiManager.h"
 #include "WebServerManager.h"
-#include "Helper.h"
 
 #define SYSTEM_LED 2
 
@@ -41,6 +40,6 @@ void loop() {
     if (WiFiClass::status() != WL_CONNECTED) {
         Serial.println("Connection lost.");
         wifiManager.connectToWifi(SSID, PWD);
-        Helper::wait(10);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
