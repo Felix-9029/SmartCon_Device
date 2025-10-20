@@ -13,7 +13,7 @@ void WiFiManager::init() {
     char macPart[7 + 1];
     sprintf(macPart, "_%02x%02x%02x", _mac[3], _mac[4], _mac[5]);
 
-    std::string hostnameString = "EasyLED";
+    std::string hostnameString = "SmartCon";
     hostnameString.append(macPart);
 
     WiFiClass::setHostname(hostnameString.c_str());

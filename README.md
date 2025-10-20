@@ -1,4 +1,4 @@
-# EasyLED_Server
+# SmartCon_Device
 LED Server for Smart Home Light Controller
 
 Zum erstellen der CMakeListsPrivate.txt:<br />

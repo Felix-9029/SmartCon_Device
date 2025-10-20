@@ -67,7 +67,7 @@ void GardenDoorHandler::handlePost(AsyncWebServerRequest *request, JsonObject &j
 
         xTaskCreate(
                 startCountdown,             /* Task function. */
-                "AnimationTask",             /* name of task. */
+                "DisableGateTask",             /* name of task. */
                 10000,                   /* Stack size of task */
                 this,                /* parameter of the task */
                 1,                          /* priority of the task */
